@@ -1,4 +1,7 @@
+mod error;
 mod file_reader;
+mod scanner;
+mod token;
 
 use std::env;
 
@@ -10,6 +13,12 @@ fn main() {
     }
 
     let reader = file_reader::FileReader::new(&argv[1]);
-    dbg!(argv);
-    dbg!(reader);
+
+    for (_, src) in reader.files {
+        let s = scanner::Scanner::new(src);
+
+        for t in s.tokens {
+            println!("{}", t);
+        }
+    }
 }

@@ -3,12 +3,12 @@ use std::{collections::HashMap, path::PathBuf};
 
 #[derive(Debug)]
 pub struct FileReader {
-    pub files: HashMap<PathBuf, String>,
+    pub files: HashMap<PathBuf, Vec<u8>>,
 }
 
 impl FileReader {
     pub fn new(path: &String) -> Self {
-        let mut files: HashMap<PathBuf, String> = HashMap::new();
+        let mut files = HashMap::new();
 
         for entry in
             glob(path.as_str()).expect(format!("failed to read pattern \"{}\"", path).as_str())
@@ -18,7 +18,7 @@ impl FileReader {
                 Err(e) => panic!("{}", e),
             };
 
-            let v = match std::fs::read_to_string(&k) {
+            let v = match std::fs::read(&k) {
                 Ok(v) => v,
                 Err(e) => panic!("{}", e),
             };
