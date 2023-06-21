@@ -100,6 +100,7 @@ impl Kind {
             Self::LtEq => "<=",
             Self::And => "&&",
             Self::Or => "||",
+            Self::Identifier => "identifier",
             Self::String => "string",
             Self::Number => "number",
             Self::Boolean => "boolean",
@@ -116,7 +117,6 @@ impl Kind {
             Self::Pub => "pub",
             Self::Use => "use",
             Self::Eof => "\0",
-            _ => "",
         };
     }
 }
