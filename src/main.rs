@@ -1,4 +1,5 @@
 mod error;
+mod expression;
 mod file_reader;
 mod scanner;
 mod token;
