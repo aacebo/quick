@@ -1,7 +1,9 @@
 mod error;
 mod expression;
 mod file_reader;
+mod parser;
 mod scanner;
+mod statement;
 mod token;
 
 use std::env;
