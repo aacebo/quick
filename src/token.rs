@@ -1,5 +1,7 @@
+use std::{string::FromUtf8Error, num::ParseFloatError};
+
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Kind {
     Comma,
     Dot,
@@ -35,7 +37,6 @@ pub enum Kind {
     Identifier,
     String,
     Number,
-    Boolean,
     Nil,
 
     // keywords
@@ -50,6 +51,8 @@ pub enum Kind {
     This,
     Pub,
     Use,
+    True,
+    False,
 
     Eof,
 }
@@ -68,6 +71,8 @@ impl Kind {
             "this" => Some(Self::This),
             "pub" => Some(Self::Pub),
             "use" => Some(Self::Use),
+            "true" => Some(Self::True),
+            "false" => Some(Self::False),
             _ => None,
         };
     }
@@ -103,7 +108,6 @@ impl Kind {
             Self::Identifier => "identifier",
             Self::String => "string",
             Self::Number => "number",
-            Self::Boolean => "boolean",
             Self::Nil => "nil",
             Self::If => "if",
             Self::Else => "else",
@@ -116,12 +120,14 @@ impl Kind {
             Self::This => "this",
             Self::Pub => "pub",
             Self::Use => "use",
+            Self::True => "true",
+            Self::False => "false",
             Self::Eof => "\0",
         };
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Token {
     pub kind: Kind,
     pub ln: usize,
@@ -139,6 +145,15 @@ impl Token {
             end,
             value,
         };
+    }
+
+    pub fn as_string(&self) -> Result<String, FromUtf8Error> {
+        return String::from_utf8(self.value.clone());
+    }
+
+    pub fn as_number(&self) -> Result<f64, ParseFloatError> {
+        let s = self.as_string().expect("failed to parse token bytes to string");
+        return s.parse();
     }
 }
 

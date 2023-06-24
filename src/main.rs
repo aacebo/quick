@@ -5,6 +5,7 @@ mod parser;
 mod scanner;
 mod statement;
 mod token;
+mod visitor;
 
 use std::env;
 
