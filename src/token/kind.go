@@ -69,6 +69,7 @@ const (
 	INT
 	FLOAT
 	BOOL
+	MAP
 	PRINT
 )
 
@@ -91,5 +92,6 @@ var Keywords = map[string]Kind{
 	"int":    INT,
 	"float":  FLOAT,
 	"bool":   BOOL,
+	"map":    MAP,
 	"print":  PRINT,
 }
