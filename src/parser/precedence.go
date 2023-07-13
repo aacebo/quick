@@ -5,7 +5,7 @@ import "quick/src/token"
 type Precedence int
 
 const (
-	NONE = iota
+	NONE Precedence = iota
 	ASSIGNMENT
 	OR
 	AND
