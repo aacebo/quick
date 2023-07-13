@@ -1,7 +1,41 @@
 package main
 
-import "fmt"
+import (
+	"log"
+	"os"
+	"quick/src/scanner"
+	"quick/src/token"
+)
 
 func main() {
-	fmt.Println("hello world")
+	files := map[string][]byte{}
+
+	if len(os.Args) < 2 {
+		log.Fatalln("usage: quick main.q")
+	}
+
+	for i := 1; i < len(os.Args); i++ {
+		bytes, err := os.ReadFile(os.Args[i])
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		files[os.Args[i]] = bytes
+		scanner := scanner.New(bytes)
+
+		for {
+			t, err := scanner.Next()
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if t.Kind == token.EOF {
+				break
+			}
+
+			log.Println(t.ToString())
+		}
+	}
 }
