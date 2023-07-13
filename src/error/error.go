@@ -9,9 +9,9 @@ type Error struct {
 
 func New(ln int, start int, end int, message string) *Error {
 	return &Error{
-		ln,
-		start,
-		end,
-		message,
+		Ln:      ln,
+		Start:   start,
+		End:     end,
+		Message: message,
 	}
 }

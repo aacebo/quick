@@ -35,7 +35,7 @@ func main() {
 				break
 			}
 
-			log.Println(t.ToString())
+			log.Println(t.String())
 		}
 	}
 }

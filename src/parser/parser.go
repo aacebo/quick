@@ -16,10 +16,10 @@ type Parser struct {
 
 func New(src []byte) *Parser {
 	return &Parser{
-		nil,
-		nil,
-		[]*error.Error{},
-		scanner.New(src),
+		Curr:    nil,
+		Prev:    nil,
+		Errors:  []*error.Error{},
+		scanner: scanner.New(src),
 	}
 }
 

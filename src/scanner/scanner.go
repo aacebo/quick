@@ -14,10 +14,10 @@ type Scanner struct {
 
 func New(src []byte) *Scanner {
 	return &Scanner{
-		src,
-		0,
-		0,
-		0,
+		src:   src,
+		ln:    0,
+		left:  0,
+		right: 0,
 	}
 }
 
