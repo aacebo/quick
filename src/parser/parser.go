@@ -14,12 +14,12 @@ type Parser struct {
 	scanner *scanner.Scanner
 }
 
-func New(src []byte) *Parser {
+func New(path string, src []byte) *Parser {
 	return &Parser{
 		Curr:    nil,
 		Prev:    nil,
 		Errors:  []*error.Error{},
-		scanner: scanner.New(src),
+		scanner: scanner.New(path, src),
 	}
 }
 

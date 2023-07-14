@@ -22,7 +22,7 @@ func main() {
 		}
 
 		files[os.Args[i]] = bytes
-		scanner := scanner.New(bytes)
+		scanner := scanner.New(os.Args[i], bytes)
 
 		for {
 			t, err := scanner.Next()
@@ -35,7 +35,7 @@ func main() {
 				break
 			}
 
-			log.Println(t.String())
+			log.Printf("[%s] -> %s\n", t.Path, t.String())
 		}
 	}
 }

@@ -4,15 +4,17 @@ import "strconv"
 
 type Token struct {
 	Kind  Kind
+	Path  string
 	Ln    int
 	Start int
 	End   int
 	Value []byte
 }
 
-func New(kind Kind, ln int, start int, end int, value []byte) *Token {
+func New(kind Kind, path string, ln int, start int, end int, value []byte) *Token {
 	return &Token{
 		Kind:  kind,
+		Path:  path,
 		Ln:    ln,
 		Start: start,
 		End:   end,

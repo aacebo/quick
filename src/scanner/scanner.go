@@ -6,14 +6,16 @@ import (
 )
 
 type Scanner struct {
+	path  string
 	src   []byte
 	ln    int
 	left  int
 	right int
 }
 
-func New(src []byte) *Scanner {
+func New(path string, src []byte) *Scanner {
 	return &Scanner{
+		path:  path,
 		src:   src,
 		ln:    0,
 		left:  0,
@@ -241,6 +243,7 @@ func (self Scanner) isAlpha(b byte) bool {
 func (self Scanner) create(kind token.Kind) *token.Token {
 	return token.New(
 		kind,
+		self.path,
 		self.ln,
 		self.left,
 		self.right,
