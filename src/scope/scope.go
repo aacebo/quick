@@ -38,9 +38,13 @@ func (self Scope) Has(key string) bool {
 	return false
 }
 
+func (self Scope) GetLocal(key string) *value.Value {
+	return self.values[key]
+}
+
 func (self Scope) Get(key string) *value.Value {
 	if self.HasLocal(key) {
-		return self.values[key]
+		return self.GetLocal(key)
 	}
 
 	if self.parent != nil {

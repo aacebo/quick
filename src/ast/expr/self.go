@@ -9,6 +9,6 @@ type Self struct {
 	Keyword *token.Token
 }
 
-func (self Self) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Self) Accept(v Visitor) value.Value {
+	return v.VisitSelfExpr(self)
 }

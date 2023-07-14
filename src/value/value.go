@@ -13,5 +13,6 @@ const (
 
 type Value interface {
 	Kind() Kind
+	Truthy() Bool
 	String() string
 }

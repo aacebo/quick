@@ -1,8 +1,12 @@
 package value
 
 type Comparable interface {
-	comparable
-	Value
+	Eq(Comparable) Bool
 
-	Byte | Bool | Int | Float | String
+	Value
+}
+
+type KeyComparable interface {
+	comparable
+	Comparable
 }

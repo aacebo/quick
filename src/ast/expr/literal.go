@@ -6,6 +6,6 @@ type Literal struct {
 	Value value.Value
 }
 
-func (self Literal) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Literal) Accept(v Visitor) value.Value {
+	return v.VisitLiteralExpr(self)
 }

@@ -6,11 +6,11 @@ import (
 )
 
 type Set struct {
-	Object *Expr
+	Object Expr
 	Name   *token.Token
-	Value  *Expr
+	Value  Expr
 }
 
-func (self Set) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Set) Accept(v Visitor) value.Value {
+	return v.VisitSetExpr(self)
 }

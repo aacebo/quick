@@ -9,6 +9,6 @@ type Var struct {
 	Name *token.Token
 }
 
-func (self Var) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Var) Accept(v Visitor) value.Value {
+	return v.VisitVarExpr(self)
 }

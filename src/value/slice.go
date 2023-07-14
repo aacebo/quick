@@ -10,6 +10,10 @@ func (self Slice[T]) ComplexKind() ComplexKind {
 	return SLICE
 }
 
+func (self Slice[T]) Truthy() Bool {
+	return self != nil
+}
+
 func (self Slice[T]) String() string {
 	str := "["
 

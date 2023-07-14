@@ -1,6 +1,6 @@
 package value
 
-type Map[K Comparable, V Value] map[K]V
+type Map[K KeyComparable, V Value] map[K]V
 
 func (self Map[K, V]) Kind() Kind {
 	return COMPLEX
@@ -8,6 +8,10 @@ func (self Map[K, V]) Kind() Kind {
 
 func (self Map[K, V]) ComplexKind() ComplexKind {
 	return MAP
+}
+
+func (self Map[K, V]) Truthy() Bool {
+	return self != nil
 }
 
 func (self Map[K, V]) String() string {

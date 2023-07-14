@@ -6,11 +6,11 @@ import (
 )
 
 type Logical struct {
-	Left  *Expr
+	Left  Expr
 	Op    *token.Token
-	Right *Expr
+	Right Expr
 }
 
-func (self Logical) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Logical) Accept(v Visitor) value.Value {
+	return v.VisitLogicalExpr(self)
 }

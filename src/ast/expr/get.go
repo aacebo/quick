@@ -6,10 +6,10 @@ import (
 )
 
 type Get struct {
-	Object *Expr
+	Object Expr
 	Name   *token.Token
 }
 
-func (self Get) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Get) Accept(v Visitor) value.Value {
+	return v.VisitGetExpr(self)
 }

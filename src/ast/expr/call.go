@@ -6,11 +6,11 @@ import (
 )
 
 type Call struct {
-	Callee *Expr
+	Callee Expr
 	Paren  *token.Token
-	Args   []*Expr
+	Args   []Expr
 }
 
-func (self Call) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Call) Accept(v Visitor) value.Value {
+	return v.VisitCallExpr(self)
 }

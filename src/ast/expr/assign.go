@@ -7,9 +7,9 @@ import (
 
 type Assign struct {
 	Name  *token.Token
-	Value *Expr
+	Value Expr
 }
 
-func (self Assign) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Assign) Accept(v Visitor) value.Value {
+	return v.VisitAssignExpr(self)
 }

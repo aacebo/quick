@@ -7,6 +7,7 @@ const (
 	STRING
 	MAP
 	FUNCTION
+	STRUCT
 )
 
 type Complex interface {

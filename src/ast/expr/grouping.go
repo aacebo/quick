@@ -3,9 +3,9 @@ package expr
 import "quick/src/value"
 
 type Grouping struct {
-	Expr *Expr
+	Expr Expr
 }
 
-func (self Grouping) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Grouping) Accept(v Visitor) value.Value {
+	return v.VisitGroupingExpr(self)
 }

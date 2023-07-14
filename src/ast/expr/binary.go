@@ -6,11 +6,11 @@ import (
 )
 
 type Binary struct {
-	Left  *Expr
+	Left  Expr
 	Op    *token.Token
-	Right *Expr
+	Right Expr
 }
 
-func (self Binary) Accept(v Visitor) value.Value {
-	return v.VisitExpr(self)
+func (self *Binary) Accept(v Visitor) value.Value {
+	return v.VisitBinaryExpr(self)
 }
