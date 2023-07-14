@@ -1,7 +1,10 @@
 package expr
 
-import "quick/src/value"
+import (
+	"quick/src/error"
+	"quick/src/value"
+)
 
 type Expr interface {
-	Accept(Visitor) value.Value
+	Accept(Visitor) (value.Value, *error.Error)
 }

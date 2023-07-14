@@ -4,20 +4,20 @@ import "quick/src/value"
 
 type Scope struct {
 	parent *Scope
-	values map[string]*value.Value
+	values map[string]value.Value
 }
 
 func New() *Scope {
 	return &Scope{
 		parent: nil,
-		values: map[string]*value.Value{},
+		values: map[string]value.Value{},
 	}
 }
 
 func NewChild(parent *Scope) *Scope {
 	return &Scope{
 		parent: parent,
-		values: map[string]*value.Value{},
+		values: map[string]value.Value{},
 	}
 }
 
@@ -38,11 +38,11 @@ func (self Scope) Has(key string) bool {
 	return false
 }
 
-func (self Scope) GetLocal(key string) *value.Value {
+func (self Scope) GetLocal(key string) value.Value {
 	return self.values[key]
 }
 
-func (self Scope) Get(key string) *value.Value {
+func (self Scope) Get(key string) value.Value {
 	if self.HasLocal(key) {
 		return self.GetLocal(key)
 	}
@@ -55,5 +55,5 @@ func (self Scope) Get(key string) *value.Value {
 }
 
 func (self *Scope) Set(key string, value value.Value) {
-	self.values[key] = &value
+	self.values[key] = value
 }

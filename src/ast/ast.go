@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"quick/src/ast/expr"
 	"quick/src/ast/stmt"
+	"quick/src/error"
 	"quick/src/scope"
 	"quick/src/token"
 	"quick/src/value"
@@ -25,19 +26,29 @@ func NewChild(parent *scope.Scope) *AST {
 	}
 }
 
-func (self *AST) Interpret(stmts []stmt.Stmt) value.Value {
+func (self *AST) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
+	var value value.Value = nil
+
 	for _, stmt := range stmts {
-		self.Exec(stmt)
+		v, err := self.Exec(stmt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if v != nil {
+			value = v
+		}
 	}
 
-	return value.Nil{}
+	return value, nil
 }
 
-func (self *AST) Eval(e expr.Expr) value.Value {
+func (self *AST) Eval(e expr.Expr) (value.Value, *error.Error) {
 	return e.Accept(self)
 }
 
-func (self *AST) Exec(s stmt.Stmt) value.Value {
+func (self *AST) Exec(s stmt.Stmt) (value.Value, *error.Error) {
 	return s.Accept(self)
 }
 
@@ -45,26 +56,30 @@ func (self *AST) Exec(s stmt.Stmt) value.Value {
  * Statements
  */
 
-func (self *AST) VisitBlockStmt(s *stmt.Block) value.Value {
+func (self *AST) VisitBlockStmt(s *stmt.Block) (value.Value, *error.Error) {
 	return self.Interpret(s.Stmts)
 }
 
-func (self *AST) VisitExprStmt(s *stmt.Expr) value.Value {
+func (self *AST) VisitExprStmt(s *stmt.Expr) (value.Value, *error.Error) {
 	return self.Eval(s.Expr)
 }
 
-func (self *AST) VisitForStmt(s *stmt.For) value.Value {
-	return value.Nil{}
+func (self *AST) VisitForStmt(s *stmt.For) (value.Value, *error.Error) {
+	return nil, nil
 }
 
-func (self *AST) VisitFnStmt(s *stmt.Fn) value.Value {
+func (self *AST) VisitFnStmt(s *stmt.Fn) (value.Value, *error.Error) {
 	fn := NewFn(s)
 	self.scope.Set(s.Name.String(), fn)
-	return fn
+	return nil, nil
 }
 
-func (self *AST) VisitIfStmt(s *stmt.If) value.Value {
-	v := self.Eval(s.Cond)
+func (self *AST) VisitIfStmt(s *stmt.If) (value.Value, *error.Error) {
+	v, err := self.Eval(s.Cond)
+
+	if err != nil {
+		return nil, err
+	}
 
 	if v.Truthy() {
 		self.Exec(s.Then)
@@ -72,85 +87,128 @@ func (self *AST) VisitIfStmt(s *stmt.If) value.Value {
 		self.Exec(s.Else)
 	}
 
-	return value.Nil{}
+	return nil, nil
 }
 
-func (self *AST) VisitPrintStmt(s *stmt.Print) value.Value {
-	fmt.Print(self.Eval(s.Expr).String())
-	return value.Nil{}
-}
+func (self *AST) VisitPrintStmt(s *stmt.Print) (value.Value, *error.Error) {
+	v, err := self.Eval(s.Expr)
 
-func (self *AST) VisitReturnStmt(s *stmt.Return) value.Value {
-	var value value.Value = value.Nil{}
-
-	if s.Value != nil {
-		value = self.Eval(s.Value)
+	if err != nil {
+		return nil, err
 	}
 
-	return value
+	fmt.Print(v.String())
+	return nil, nil
 }
 
-func (self *AST) VisitStructStmt(s *stmt.Struct) value.Value {
-	return value.Nil{}
+func (self *AST) VisitReturnStmt(s *stmt.Return) (value.Value, *error.Error) {
+	var value value.Value = nil
+
+	if s.Value != nil {
+		v, err := self.Eval(s.Value)
+
+		if err != nil {
+			return nil, err
+		}
+
+		value = v
+	}
+
+	return value, nil
 }
 
-func (self *AST) VisitVarStmt(s *stmt.Var) value.Value {
+func (self *AST) VisitStructStmt(s *stmt.Struct) (value.Value, *error.Error) {
+	return nil, nil
+}
+
+func (self *AST) VisitVarStmt(s *stmt.Var) (value.Value, *error.Error) {
 	var value value.Value = value.Nil{}
 
 	if s.Init != nil {
-		value = self.Eval(s.Init)
+		v, err := self.Eval(s.Init)
+
+		if err != nil {
+			return nil, err
+		}
+
+		value = v
 	}
 
 	self.scope.Set(s.Name.String(), value)
-	return value
+	return nil, nil
 }
 
 /*
  * Expressions
  */
 
-func (self *AST) VisitAssignExpr(e *expr.Assign) value.Value {
-	value := self.Eval(e.Value)
+func (self *AST) VisitAssignExpr(e *expr.Assign) (value.Value, *error.Error) {
+	value, err := self.Eval(e.Value)
+
+	if err != nil {
+		return nil, err
+	}
+
 	self.scope.Set(e.Name.String(), value)
-	return value
+	return value, nil
 }
 
-func (self *AST) VisitBinaryExpr(e *expr.Binary) value.Value {
-	left := self.Eval(e.Left).(value.Comparable)
-	right := self.Eval(e.Right).(value.Comparable)
+func (self *AST) VisitBinaryExpr(e *expr.Binary) (value.Value, *error.Error) {
+	left, err := self.Eval(e.Left)
+
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := self.Eval(e.Right)
+
+	if err != nil {
+		return nil, err
+	}
 
 	switch e.Op.Kind {
 	case token.EQ_EQ:
-		return left.Eq(right)
+		return left.(value.Comparable).Eq(right.(value.Comparable)), nil
 	case token.NOT_EQ:
-		return !left.Eq(right)
+		return !left.(value.Comparable).Eq(right.(value.Comparable)), nil
 	case token.GT:
-		return (left.(value.Numeric)).Gt(right.(value.Numeric))
+		return left.(value.Numeric).Gt(right.(value.Numeric)), nil
 	case token.GT_EQ:
-		return (left.(value.Numeric)).GtEq(right.(value.Numeric))
+		return left.(value.Numeric).GtEq(right.(value.Numeric)), nil
 	case token.LT:
-		return (left.(value.Numeric)).Lt(right.(value.Numeric))
+		return left.(value.Numeric).Lt(right.(value.Numeric)), nil
 	case token.LT_EQ:
-		return (left.(value.Numeric)).LtEq(right.(value.Numeric))
+		return left.(value.Numeric).LtEq(right.(value.Numeric)), nil
 	case token.PLUS:
-		return (left.(value.Numeric)).Add(right.(value.Numeric))
+		return left.(value.Numeric).Add(right.(value.Numeric)), nil
 	case token.MINUS:
-		return (left.(value.Numeric)).Subtract(right.(value.Numeric))
+		return left.(value.Numeric).Subtract(right.(value.Numeric)), nil
 	case token.STAR:
-		return (left.(value.Numeric)).Multiply(right.(value.Numeric))
+		return left.(value.Numeric).Multiply(right.(value.Numeric)), nil
 	case token.SLASH:
-		return (left.(value.Numeric)).Divide(right.(value.Numeric))
+		return left.(value.Numeric).Divide(right.(value.Numeric)), nil
 	}
 
-	return value.Nil{}
+	return nil, nil
 }
 
-func (self *AST) VisitCallExpr(e *expr.Call) value.Value {
-	callee := self.Eval(e.Callee)
+func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
+	callee, err := self.Eval(e.Callee)
+
+	if err != nil {
+		return nil, err
+	}
+
 	args := []value.Value{}
 
 	for _, arg := range e.Args {
-		args = append(args, self.Eval(arg))
+		v, err := self.Eval(arg)
+
+		if err != nil {
+			return nil, err
+		}
+
+		args = append(args, v)
 	}
 
 	fn, ok := callee.(*Fn)
@@ -166,57 +224,65 @@ func (self *AST) VisitCallExpr(e *expr.Call) value.Value {
 	return fn.Call(self.scope, args)
 }
 
-func (self *AST) VisitGetExpr(e *expr.Get) value.Value {
-	return value.Nil{}
+func (self *AST) VisitGetExpr(e *expr.Get) (value.Value, *error.Error) {
+	return nil, nil
 }
 
-func (self *AST) VisitGroupingExpr(e *expr.Grouping) value.Value {
+func (self *AST) VisitGroupingExpr(e *expr.Grouping) (value.Value, *error.Error) {
 	return self.Eval(e.Expr)
 }
 
-func (self *AST) VisitLiteralExpr(e *expr.Literal) value.Value {
-	return e.Value
+func (self *AST) VisitLiteralExpr(e *expr.Literal) (value.Value, *error.Error) {
+	return e.Value, nil
 }
 
-func (self *AST) VisitLogicalExpr(e *expr.Logical) value.Value {
-	left := self.Eval(e.Left)
+func (self *AST) VisitLogicalExpr(e *expr.Logical) (value.Value, *error.Error) {
+	left, err := self.Eval(e.Left)
+
+	if err != nil {
+		return nil, err
+	}
 
 	if e.Op.Kind == token.OR {
 		if left.Truthy() {
-			return left
+			return left, nil
 		}
 	} else {
 		if !left.Truthy() {
-			return left
+			return left, nil
 		}
 	}
 
 	return self.Eval(e.Right)
 }
 
-func (self *AST) VisitSelfExpr(e *expr.Self) value.Value {
-	return *self.scope.GetLocal("self")
+func (self *AST) VisitSelfExpr(e *expr.Self) (value.Value, *error.Error) {
+	return self.scope.GetLocal("self"), nil
 }
 
-func (self *AST) VisitSetExpr(e *expr.Set) value.Value {
-	return value.Nil{}
+func (self *AST) VisitSetExpr(e *expr.Set) (value.Value, *error.Error) {
+	return nil, nil
 }
 
-func (self *AST) VisitUnaryExpr(e *expr.Unary) value.Value {
-	right := self.Eval(e.Right)
+func (self *AST) VisitUnaryExpr(e *expr.Unary) (value.Value, *error.Error) {
+	right, err := self.Eval(e.Right)
+
+	if err != nil {
+		return nil, err
+	}
 
 	switch e.Op.Kind {
 	case token.NOT:
-		return !right.Truthy()
+		return !right.Truthy(), nil
 	case token.MINUS:
 		v := right.(value.Numeric)
 		v.Dec()
-		return v
+		return v, nil
 	}
 
-	return value.Nil{}
+	return nil, nil
 }
 
-func (self *AST) VisitVarExpr(e *expr.Var) value.Value {
-	return *self.scope.Get(e.Name.String())
+func (self *AST) VisitVarExpr(e *expr.Var) (value.Value, *error.Error) {
+	return self.scope.Get(e.Name.String()), nil
 }

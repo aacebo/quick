@@ -1,15 +1,18 @@
 package stmt
 
-import "quick/src/value"
+import (
+	"quick/src/error"
+	"quick/src/value"
+)
 
 type Visitor interface {
-	VisitBlockStmt(*Block) value.Value
-	VisitExprStmt(*Expr) value.Value
-	VisitForStmt(*For) value.Value
-	VisitFnStmt(*Fn) value.Value
-	VisitIfStmt(*If) value.Value
-	VisitPrintStmt(*Print) value.Value
-	VisitReturnStmt(*Return) value.Value
-	VisitStructStmt(*Struct) value.Value
-	VisitVarStmt(*Var) value.Value
+	VisitBlockStmt(*Block) (value.Value, *error.Error)
+	VisitExprStmt(*Expr) (value.Value, *error.Error)
+	VisitForStmt(*For) (value.Value, *error.Error)
+	VisitFnStmt(*Fn) (value.Value, *error.Error)
+	VisitIfStmt(*If) (value.Value, *error.Error)
+	VisitPrintStmt(*Print) (value.Value, *error.Error)
+	VisitReturnStmt(*Return) (value.Value, *error.Error)
+	VisitStructStmt(*Struct) (value.Value, *error.Error)
+	VisitVarStmt(*Var) (value.Value, *error.Error)
 }

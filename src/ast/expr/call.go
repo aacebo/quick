@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"quick/src/error"
 	"quick/src/token"
 	"quick/src/value"
 )
@@ -11,6 +12,6 @@ type Call struct {
 	Args   []Expr
 }
 
-func (self *Call) Accept(v Visitor) value.Value {
+func (self *Call) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitCallExpr(self)
 }

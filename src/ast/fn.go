@@ -2,6 +2,7 @@ package ast
 
 import (
 	"quick/src/ast/stmt"
+	"quick/src/error"
 	"quick/src/scope"
 	"quick/src/value"
 )
@@ -34,14 +35,16 @@ func (self Fn) String() string {
 	return "<fn " + self.stmt.Name.String() + ">"
 }
 
-func (self *Fn) Call(parent *scope.Scope, args []value.Value) value.Value {
+func (self *Fn) Call(parent *scope.Scope, args []value.Value) (value.Value, *error.Error) {
 	self.ast = NewChild(parent)
+
+	defer func() {
+		self.ast = nil
+	}()
 
 	for i, t := range self.stmt.Params {
 		self.ast.scope.Set(t.String(), args[i])
 	}
 
-	self.ast.Interpret(self.stmt.Body)
-	self.ast = nil
-	return value.Nil{}
+	return self.ast.Interpret(self.stmt.Body)
 }
