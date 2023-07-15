@@ -225,7 +225,20 @@ func (self *AST) VisitBinaryExpr(e *expr.Binary) (value.Value, *error.Error) {
 	case token.LT_EQ:
 		return left.(value.Numeric).LtEq(right.(value.Numeric)), nil
 	case token.PLUS:
-		return left.(value.Numeric).Add(right.(value.Numeric)), nil
+		switch left.(type) {
+		case value.Numeric:
+			return left.(value.Numeric).Add(right.(value.Numeric)), nil
+		case value.Concatable:
+			return left.(value.Concatable).Concat(right.(value.Concatable)), nil
+		}
+
+		return nil, error.New(
+			e.Op.Path,
+			e.Op.Ln,
+			e.Op.Start,
+			e.Op.End,
+			"invalid operands",
+		)
 	case token.MINUS:
 		return left.(value.Numeric).Subtract(right.(value.Numeric)), nil
 	case token.STAR:

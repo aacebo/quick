@@ -18,6 +18,10 @@ func (self String) String() string {
 	return string(self)
 }
 
-func (self String) Eq(other String) Bool {
-	return self == other
+func (self String) Eq(other Comparable) Bool {
+	return self == other.(String)
+}
+
+func (self String) Concat(other Concatable) Concatable {
+	return self + other.(String)
 }
