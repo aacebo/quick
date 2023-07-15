@@ -147,6 +147,12 @@ func (self *Parser) _return() (stmt.Stmt, *error.Error) {
 		value = v
 	}
 
+	_, err := self.consume(token.SEMI_COLON, "expected ';'")
+
+	if err != nil {
+		return nil, err
+	}
+
 	return stmt.NewReturn(keyword, value), nil
 }
 
