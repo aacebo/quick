@@ -11,6 +11,13 @@ type Get struct {
 	Name   *token.Token
 }
 
+func NewGet(object Expr, name *token.Token) *Get {
+	return &Get{
+		Object: object,
+		Name:   name,
+	}
+}
+
 func (self *Get) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitGetExpr(self)
 }

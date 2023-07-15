@@ -11,6 +11,13 @@ type Unary struct {
 	Right Expr
 }
 
+func NewUnary(op *token.Token, right Expr) *Unary {
+	return &Unary{
+		Op:    op,
+		Right: right,
+	}
+}
+
 func (self *Unary) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitUnaryExpr(self)
 }

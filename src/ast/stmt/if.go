@@ -12,6 +12,14 @@ type If struct {
 	Else Stmt
 }
 
+func NewIf(cond expr.Expr, then Stmt, _else Stmt) *If {
+	return &If{
+		Cond: cond,
+		Then: then,
+		Else: _else,
+	}
+}
+
 func (self *If) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitIfStmt(self)
 }

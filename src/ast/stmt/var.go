@@ -13,6 +13,14 @@ type Var struct {
 	Init    expr.Expr
 }
 
+func NewVar(keyword *token.Token, name *token.Token, init expr.Expr) *Var {
+	return &Var{
+		Keyword: keyword,
+		Name:    name,
+		Init:    init,
+	}
+}
+
 func (self *Var) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitVarStmt(self)
 }

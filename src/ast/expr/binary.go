@@ -12,6 +12,14 @@ type Binary struct {
 	Right Expr
 }
 
+func NewBinary(left Expr, op *token.Token, right Expr) *Binary {
+	return &Binary{
+		Left:  left,
+		Op:    op,
+		Right: right,
+	}
+}
+
 func (self *Binary) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitBinaryExpr(self)
 }

@@ -1,15 +1,15 @@
 package value
 
 type Numeric interface {
-	Gt(Comparable) Bool
-	GtEq(Comparable) Bool
-	Lt(Comparable) Bool
-	LtEq(Comparable) Bool
+	Gt(Numeric) Bool
+	GtEq(Numeric) Bool
+	Lt(Numeric) Bool
+	LtEq(Numeric) Bool
 
-	Add(Comparable) Comparable
-	Subtract(Comparable) Comparable
-	Multiply(Comparable) Comparable
-	Divide(Comparable) Comparable
+	Add(Numeric) Numeric
+	Subtract(Numeric) Numeric
+	Multiply(Numeric) Numeric
+	Divide(Numeric) Numeric
 
 	Inc()
 	Dec()

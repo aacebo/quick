@@ -18,40 +18,40 @@ func (self Int) String() string {
 	return fmt.Sprintf("%d", self)
 }
 
-func (self Int) Eq(other Int) Bool {
-	return self == other
+func (self Int) Eq(other Comparable) Bool {
+	return self == other.(Int)
 }
 
-func (self Int) Gt(other Int) Bool {
-	return self > other
+func (self Int) Gt(other Numeric) Bool {
+	return self > other.(Int)
 }
 
-func (self Int) GtEq(other Int) Bool {
-	return self >= other
+func (self Int) GtEq(other Numeric) Bool {
+	return self >= other.(Int)
 }
 
-func (self Int) Lt(other Int) Bool {
-	return self < other
+func (self Int) Lt(other Numeric) Bool {
+	return self < other.(Int)
 }
 
-func (self Int) LtEq(other Int) Bool {
-	return self <= other
+func (self Int) LtEq(other Numeric) Bool {
+	return self <= other.(Int)
 }
 
-func (self Int) Add(other Int) Int {
-	return self + other
+func (self Int) Add(other Numeric) Numeric {
+	return self + other.(Int)
 }
 
-func (self Int) Subtract(other Int) Int {
-	return self - other
+func (self Int) Subtract(other Numeric) Numeric {
+	return self - other.(Int)
 }
 
-func (self Int) Multiply(other Int) Int {
-	return self * other
+func (self Int) Multiply(other Numeric) Numeric {
+	return self * other.(Int)
 }
 
-func (self Int) Divide(other Int) Int {
-	return self / other
+func (self Int) Divide(other Numeric) Numeric {
+	return self / other.(Int)
 }
 
 func (self Int) Inc() {

@@ -12,6 +12,14 @@ type Logical struct {
 	Right Expr
 }
 
+func NewLogical(left Expr, op *token.Token, right Expr) *Logical {
+	return &Logical{
+		Left:  left,
+		Op:    op,
+		Right: right,
+	}
+}
+
 func (self *Logical) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitLogicalExpr(self)
 }

@@ -12,6 +12,14 @@ type Set struct {
 	Value  Expr
 }
 
+func NewSet(object Expr, name *token.Token, value Expr) *Set {
+	return &Set{
+		Object: object,
+		Name:   name,
+		Value:  value,
+	}
+}
+
 func (self *Set) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitSetExpr(self)
 }

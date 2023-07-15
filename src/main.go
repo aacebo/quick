@@ -1,14 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"quick/src/scanner"
-	"quick/src/token"
+	"quick/src/ast"
+	"quick/src/ast/stmt"
+	"quick/src/error"
+	"quick/src/parser"
 )
 
 func main() {
-	files := map[string][]byte{}
+	stmts := []stmt.Stmt{}
+	errs := []*error.Error{}
 
 	if len(os.Args) < 2 {
 		log.Fatalln("usage: quick main.q")
@@ -21,21 +25,26 @@ func main() {
 			log.Fatal(err)
 		}
 
-		files[os.Args[i]] = bytes
-		scanner := scanner.New(os.Args[i], bytes)
+		_stmts, _errs := parser.New(os.Args[i], bytes).Parse()
+		stmts = append(stmts, _stmts...)
+		errs = append(errs, _errs...)
+	}
 
-		for {
-			t, err := scanner.Next()
-
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			if t.Kind == token.EOF {
-				break
-			}
-
-			log.Printf("[%s] -> %s\n", t.Path, t.String())
+	if len(errs) > 0 {
+		for _, err := range errs {
+			fmt.Println(err.String())
 		}
+
+		log.Fatalln("failed to compile")
+	}
+
+	value, err := ast.New().Interpret(stmts)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if value != nil {
+		log.Println(value.String())
 	}
 }

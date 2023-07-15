@@ -213,7 +213,7 @@ func (self *Scanner) onIdentifier() (*token.Token, *error.Error) {
 		self.right++
 	}
 
-	name := self.src[self.left : self.right+1]
+	name := self.src[self.left:self.right]
 
 	if kind, ok := token.Keywords[string(name)]; ok {
 		return self.create(kind), nil
@@ -253,6 +253,7 @@ func (self Scanner) create(kind token.Kind) *token.Token {
 
 func (self Scanner) error(message string) *error.Error {
 	return error.New(
+		self.path,
 		self.ln,
 		self.left,
 		self.right,

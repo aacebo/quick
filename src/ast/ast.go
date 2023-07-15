@@ -28,6 +28,12 @@ func NewChild(parent *scope.Scope) *AST {
 
 func (self *AST) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	var value value.Value = nil
+	parent := self.scope
+	self.scope = scope.NewChild(parent)
+
+	defer func() {
+		self.scope = parent
+	}()
 
 	for _, stmt := range stmts {
 		v, err := self.Exec(stmt)
@@ -65,6 +71,45 @@ func (self *AST) VisitExprStmt(s *stmt.Expr) (value.Value, *error.Error) {
 }
 
 func (self *AST) VisitForStmt(s *stmt.For) (value.Value, *error.Error) {
+	parent := self.scope
+	self.scope = scope.NewChild(parent)
+
+	defer func() {
+		self.scope = parent
+	}()
+
+	if s.Init != nil {
+		_, err := self.Exec(s.Init)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	for {
+		cond, err := self.Eval(s.Cond)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if cond == nil || !cond.Truthy() {
+			break
+		}
+
+		_, err = self.Exec(s.Body)
+
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = self.Eval(s.Inc)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return nil, nil
 }
 

@@ -10,6 +10,12 @@ type Self struct {
 	Keyword *token.Token
 }
 
+func NewSelf(keyword *token.Token) *Self {
+	return &Self{
+		Keyword: keyword,
+	}
+}
+
 func (self *Self) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitSelfExpr(self)
 }
