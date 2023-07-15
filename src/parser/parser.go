@@ -134,7 +134,7 @@ func (self *Parser) _print() (stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) _return() (stmt.Stmt, *error.Error) {
-	var value expr.Expr
+	var value expr.Expr = nil
 	keyword := self.prev
 
 	if self.curr.Kind != token.SEMI_COLON {
@@ -157,12 +157,23 @@ func (self *Parser) _return() (stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) _var() (stmt.Stmt, *error.Error) {
+	var kind *token.Token = nil
+	var nilable *token.Token = nil
 	var init expr.Expr = nil
+
 	keyword := self.prev
 	name, err := self.consume(token.IDENTIFIER, "expected variable name")
 
 	if err != nil {
 		return nil, err
+	}
+
+	if self.match(token.TYPE) || self.match(token.IDENTIFIER) {
+		kind = self.prev
+
+		if self.match(token.QUESTION_MARK) {
+			nilable = self.prev
+		}
 	}
 
 	if self.match(token.EQ) {
@@ -181,7 +192,7 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	return stmt.NewVar(keyword, name, init), nil
+	return stmt.NewVar(keyword, name, kind, nilable, init), nil
 }
 
 func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
@@ -311,7 +322,7 @@ func (self *Parser) expr() (stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) fn() (stmt.Stmt, *error.Error) {
-	params := []*token.Token{}
+	params := []*stmt.Var{}
 	name, err := self.consume(token.IDENTIFIER, "expected function name")
 
 	if err != nil {
@@ -326,13 +337,30 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 
 	if self.curr.Kind != token.RIGHT_PAREN {
 		for {
+			var nilable *token.Token = nil
 			param, err := self.consume(token.IDENTIFIER, "expected parameter name")
 
 			if err != nil {
 				return nil, err
 			}
 
-			params = append(params, param)
+			_type, err := self.consume(token.TYPE, "expected parameter type")
+
+			if err != nil {
+				return nil, err
+			}
+
+			if self.match(token.QUESTION_MARK) {
+				nilable = self.prev
+			}
+
+			params = append(params, stmt.NewVar(
+				nil,
+				param,
+				_type,
+				nilable,
+				nil,
+			))
 
 			if !self.match(token.COMMA) {
 				break
@@ -341,6 +369,18 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 	}
 
 	_, err = self.consume(token.RIGHT_PAREN, "expected ')'")
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = self.consume(token.RETURN_TYPE, "expected '->'")
+
+	if err != nil {
+		return nil, err
+	}
+
+	returnType, err := self.consume(token.TYPE, "expected return type")
 
 	if err != nil {
 		return nil, err
@@ -358,7 +398,7 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	return stmt.NewFn(name, params, body), nil
+	return stmt.NewFn(name, params, returnType, body), nil
 }
 
 func (self *Parser) block() ([]stmt.Stmt, *error.Error) {

@@ -7,16 +7,23 @@ import (
 )
 
 type Fn struct {
-	Name   *token.Token
-	Params []*token.Token
-	Body   []Stmt
+	Name       *token.Token
+	Params     []*Var
+	ReturnType *token.Token
+	Body       []Stmt
 }
 
-func NewFn(name *token.Token, params []*token.Token, body []Stmt) *Fn {
+func NewFn(
+	name *token.Token,
+	params []*Var,
+	returnType *token.Token,
+	body []Stmt,
+) *Fn {
 	return &Fn{
-		Name:   name,
-		Params: params,
-		Body:   body,
+		Name:       name,
+		Params:     params,
+		ReturnType: returnType,
+		Body:       body,
 	}
 }
 

@@ -10,13 +10,23 @@ import (
 type Var struct {
 	Keyword *token.Token
 	Name    *token.Token
+	Type    *token.Token
+	Nilable *token.Token
 	Init    expr.Expr
 }
 
-func NewVar(keyword *token.Token, name *token.Token, init expr.Expr) *Var {
+func NewVar(
+	keyword *token.Token,
+	name *token.Token,
+	_type *token.Token,
+	nilable *token.Token,
+	init expr.Expr,
+) *Var {
 	return &Var{
 		Keyword: keyword,
 		Name:    name,
+		Type:    _type,
+		Nilable: nilable,
 		Init:    init,
 	}
 }

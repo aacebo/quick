@@ -64,13 +64,16 @@ const (
 	USE
 	TRUE
 	FALSE
+	PRINT
+
+	// types
+	TYPE
 	STRING
 	BYTE
 	INT
 	FLOAT
 	BOOL
 	MAP
-	PRINT
 )
 
 var Keywords = map[string]Kind{
@@ -87,11 +90,20 @@ var Keywords = map[string]Kind{
 	"use":    USE,
 	"true":   TRUE,
 	"false":  FALSE,
+	"string": TYPE,
+	"byte":   TYPE,
+	"int":    TYPE,
+	"float":  TYPE,
+	"bool":   TYPE,
+	"map":    TYPE,
+	"print":  PRINT,
+}
+
+var Types = map[string]Kind{
 	"string": STRING,
 	"byte":   BYTE,
 	"int":    INT,
 	"float":  FLOAT,
 	"bool":   BOOL,
 	"map":    MAP,
-	"print":  PRINT,
 }

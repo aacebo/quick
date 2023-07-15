@@ -42,8 +42,8 @@ func (self *Fn) Call(parent *scope.Scope, args []value.Value) (value.Value, *err
 		self.ast = nil
 	}()
 
-	for i, t := range self.stmt.Params {
-		self.ast.scope.Set(t.String(), args[i])
+	for i, param := range self.stmt.Params {
+		self.ast.scope.Set(param.Name.String(), args[i])
 	}
 
 	return self.ast.Interpret(self.stmt.Body)
