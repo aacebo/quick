@@ -259,11 +259,27 @@ func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
 	fn, ok := callee.(*Fn)
 
 	if !ok {
-		// expected function
+		return nil, error.New(
+			e.Paren.Path,
+			e.Paren.Ln,
+			err.Start,
+			e.Paren.End,
+			"expected function",
+		)
 	}
 
 	if len(args) != len(fn.stmt.Params) {
-		// expected {x} arguments, received {y}
+		return nil, error.New(
+			e.Paren.Path,
+			e.Paren.Ln,
+			err.Start,
+			e.Paren.End,
+			fmt.Sprintf(
+				"expected %d arguments, received %d",
+				len(args),
+				len(fn.stmt.Params),
+			),
+		)
 	}
 
 	return fn.Call(self.scope, args)
