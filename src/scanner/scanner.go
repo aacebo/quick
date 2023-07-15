@@ -164,11 +164,16 @@ func (self *Scanner) onComment() (*token.Token, *error.Error) {
 }
 
 func (self *Scanner) onByte() (*token.Token, *error.Error) {
+	self.right++
+
 	if self.peek() != '\'' {
 		return nil, self.error("unterminated byte")
 	}
 
-	return self.create(token.LBYTE), nil
+	self.left++
+	token := self.create(token.LBYTE)
+	self.right++
+	return token, nil
 }
 
 func (self *Scanner) onString() (*token.Token, *error.Error) {
@@ -199,6 +204,7 @@ func (self *Scanner) onNumeric() (*token.Token, *error.Error) {
 
 	if self.peek() == '.' {
 		kind = token.LFLOAT
+		self.right++
 
 		for self.isInt(self.peek()) {
 			self.right++

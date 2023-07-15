@@ -22,6 +22,10 @@ func New(kind Kind, path string, ln int, start int, end int, value []byte) *Toke
 	}
 }
 
+func (self Token) Byte() byte {
+	return self.Value[0]
+}
+
 func (self Token) String() string {
 	return string(self.Value)
 }

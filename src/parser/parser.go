@@ -632,6 +632,8 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 		return expr.NewLiteral(value.Float(v)), nil
 	} else if self.match(token.LSTRING) {
 		return expr.NewLiteral(value.String(self.prev.String())), nil
+	} else if self.match(token.LBYTE) {
+		return expr.NewLiteral(value.Byte(self.prev.Byte())), nil
 	} else if self.match(token.NIL) {
 		return expr.NewLiteral(value.Nil{}), nil
 	} else if self.match(token.SELF) {

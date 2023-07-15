@@ -329,5 +329,15 @@ func (self *AST) VisitUnaryExpr(e *expr.Unary) (value.Value, *error.Error) {
 }
 
 func (self *AST) VisitVarExpr(e *expr.Var) (value.Value, *error.Error) {
+	if !self.scope.Has(e.Name.String()) {
+		return nil, error.New(
+			e.Name.Path,
+			e.Name.Ln,
+			e.Name.Start,
+			e.Name.End,
+			"undefined identifier",
+		)
+	}
+
 	return self.scope.Get(e.Name.String()), nil
 }
