@@ -285,12 +285,12 @@ func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
 		return nil, error.New(
 			e.Paren.Path,
 			e.Paren.Ln,
-			err.Start,
+			e.Paren.Start,
 			e.Paren.End,
 			fmt.Sprintf(
 				"expected %d arguments, received %d",
-				len(args),
 				len(fn.stmt.Params),
+				len(args),
 			),
 		)
 	}
