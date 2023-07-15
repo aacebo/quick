@@ -3,6 +3,8 @@ package scanner
 import (
 	"quick/src/error"
 	"quick/src/token"
+
+	"golang.org/x/exp/slices"
 )
 
 type Scanner struct {
@@ -180,6 +182,12 @@ func (self *Scanner) onString() (*token.Token, *error.Error) {
 	for self.peek() != '"' && self.peek() != 0 {
 		if self.peek() == '\n' {
 			self.ln++
+		} else if self.peek() == '\\' {
+			err := self.onEscape()
+
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		self.right++
@@ -193,6 +201,41 @@ func (self *Scanner) onString() (*token.Token, *error.Error) {
 	token := self.create(token.LSTRING)
 	self.right++
 	return token, nil
+}
+
+func (self *Scanner) onEscape() *error.Error {
+	self.right++
+
+	defer func() {
+		self.right--
+	}()
+
+	switch self.peek() {
+	case 'a': // bell
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\a')
+	case 'b': // backspace
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\b')
+	case 'f': // form feed
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\f')
+	case 'n': // new line
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\n')
+	case 'r': // carriage return
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\r')
+	case 't': // horizontal tab
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\t')
+	case 'v': // verical tab
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\v')
+	case '\'': // single quote
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\'')
+	case '"': // double quote
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '"')
+	case '\\': // back slash
+		self.src = slices.Replace(self.src, self.right-1, self.right+1, '\\')
+	default:
+		return self.error("unknown escape sequence")
+	}
+
+	return nil
 }
 
 func (self *Scanner) onNumeric() (*token.Token, *error.Error) {
