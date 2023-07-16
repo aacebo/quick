@@ -1,4 +1,4 @@
-package scope
+package ast
 
 import "quick/src/value"
 
@@ -7,14 +7,14 @@ type Scope struct {
 	values map[string]value.Value
 }
 
-func New() *Scope {
+func NewScope() *Scope {
 	return &Scope{
 		parent: nil,
 		values: map[string]value.Value{},
 	}
 }
 
-func NewChild(parent *Scope) *Scope {
+func NewChildScope(parent *Scope) *Scope {
 	return &Scope{
 		parent: parent,
 		values: map[string]value.Value{},

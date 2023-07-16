@@ -15,6 +15,7 @@ type Parser struct {
 	prev    *token.Token
 	errs    []*error.Error
 	scanner *scanner.Scanner
+	scope   *Scope
 }
 
 func New(path string, src []byte) *Parser {
@@ -24,6 +25,7 @@ func New(path string, src []byte) *Parser {
 		prev:    nil,
 		errs:    []*error.Error{},
 		scanner: scanner.New(path, src),
+		scope:   NewScope(),
 	}
 }
 
@@ -168,6 +170,10 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	if self.scope.HasLocal(name.String()) {
+		return nil, self.error("duplicate name")
+	}
+
 	if self.match(token.TYPE) || self.match(token.IDENTIFIER) {
 		kind = self.prev
 
@@ -192,6 +198,7 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	self.scope.Set(name.String(), nil)
 	return stmt.NewVar(keyword, name, kind, nilable, init), nil
 }
 
@@ -200,6 +207,10 @@ func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if self.scope.Has(name.String()) {
+		return nil, self.error("duplicate name")
 	}
 
 	_, err = self.consume(token.LEFT_BRACE, "expected '{'")
@@ -226,10 +237,18 @@ func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	self.scope.Set(name.String(), nil)
 	return stmt.NewStruct(name, methods), nil
 }
 
 func (self *Parser) _for() (stmt.Stmt, *error.Error) {
+	parent := self.scope
+	self.scope = NewChildScope(parent)
+
+	defer func() {
+		self.scope = parent
+	}()
+
 	var init stmt.Stmt = nil
 	var cond expr.Expr = nil
 	var inc expr.Expr = nil
@@ -329,6 +348,10 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	if self.scope.HasLocal(name.String()) {
+		return nil, self.error("duplicate name")
+	}
+
 	_, err = self.consume(token.LEFT_PAREN, "expected '('")
 
 	if err != nil {
@@ -398,10 +421,18 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	self.scope.Set(name.String(), nil)
 	return stmt.NewFn(name, params, returnType, body), nil
 }
 
 func (self *Parser) block() ([]stmt.Stmt, *error.Error) {
+	parent := self.scope
+	self.scope = NewChildScope(parent)
+
+	defer func() {
+		self.scope = parent
+	}()
+
 	stmts := []stmt.Stmt{}
 
 	for self.curr.Kind != token.RIGHT_BRACE && self.curr.Kind != token.EOF {
@@ -448,9 +479,19 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 		switch e.(type) {
 		case *expr.Var:
 			_var := e.(*expr.Var)
+
+			if !self.scope.Has(_var.Name.String()) {
+				return nil, self.error("undefined identifier")
+			}
+
 			return expr.NewAssign(_var.Name, value), nil
 		case *expr.Get:
 			get := e.(*expr.Get)
+
+			if !self.scope.Has(get.Name.String()) {
+				return nil, self.error("undefined identifier")
+			}
+
 			return expr.NewGet(get.Object, get.Name), nil
 		}
 

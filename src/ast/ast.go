@@ -5,31 +5,30 @@ import (
 	"quick/src/ast/expr"
 	"quick/src/ast/stmt"
 	"quick/src/error"
-	"quick/src/scope"
 	"quick/src/token"
 	"quick/src/value"
 )
 
 type AST struct {
-	scope *scope.Scope
+	scope *Scope
 }
 
 func New() *AST {
 	return &AST{
-		scope: scope.New(),
+		scope: NewScope(),
 	}
 }
 
-func NewChild(parent *scope.Scope) *AST {
+func NewChild(parent *Scope) *AST {
 	return &AST{
-		scope: scope.NewChild(parent),
+		scope: NewChildScope(parent),
 	}
 }
 
 func (self *AST) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	var value value.Value = nil
 	parent := self.scope
-	self.scope = scope.NewChild(parent)
+	self.scope = NewChildScope(parent)
 
 	defer func() {
 		self.scope = parent
@@ -72,7 +71,7 @@ func (self *AST) VisitExprStmt(s *stmt.Expr) (value.Value, *error.Error) {
 
 func (self *AST) VisitForStmt(s *stmt.For) (value.Value, *error.Error) {
 	parent := self.scope
-	self.scope = scope.NewChild(parent)
+	self.scope = NewChildScope(parent)
 
 	defer func() {
 		self.scope = parent
