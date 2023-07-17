@@ -15,4 +15,5 @@ type Visitor interface {
 	VisitReturnStmt(*Return) (value.Value, *error.Error)
 	VisitStructStmt(*Struct) (value.Value, *error.Error)
 	VisitVarStmt(*Var) (value.Value, *error.Error)
+	VisitUseStmt(*Use) (value.Value, *error.Error)
 }

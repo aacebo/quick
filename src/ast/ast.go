@@ -49,6 +49,24 @@ func (self *AST) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	return value, nil
 }
 
+func (self *AST) InterpretSibling(stmts []stmt.Stmt) (value.Value, *error.Error) {
+	var value value.Value = nil
+
+	for _, stmt := range stmts {
+		v, err := self.Exec(stmt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if v != nil {
+			value = v
+		}
+	}
+
+	return value, nil
+}
+
 func (self *AST) Eval(e expr.Expr) (value.Value, *error.Error) {
 	return e.Accept(self)
 }
@@ -180,6 +198,10 @@ func (self *AST) VisitVarStmt(s *stmt.Var) (value.Value, *error.Error) {
 
 	self.scope.Set(s.Name.String(), value)
 	return nil, nil
+}
+
+func (self *AST) VisitUseStmt(s *stmt.Use) (value.Value, *error.Error) {
+	return self.InterpretSibling(s.Stmts)
 }
 
 /*

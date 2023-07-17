@@ -19,13 +19,7 @@ func main() {
 	}
 
 	for i := 1; i < len(os.Args); i++ {
-		bytes, err := os.ReadFile(os.Args[i])
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		_stmts, _errs := parser.New(os.Args[i], bytes).Parse()
+		_stmts, _errs := parser.New(os.Args[i]).Parse()
 		stmts = append(stmts, _stmts...)
 		errs = append(errs, _errs...)
 	}

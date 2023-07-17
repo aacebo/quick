@@ -1,6 +1,10 @@
 package parser
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 	"quick/src/ast/expr"
 	"quick/src/ast/stmt"
 	"quick/src/error"
@@ -18,7 +22,13 @@ type Parser struct {
 	scope   *Scope
 }
 
-func New(path string, src []byte) *Parser {
+func New(path string) *Parser {
+	src, err := os.ReadFile(path)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return &Parser{
 		path:    path,
 		curr:    nil,
@@ -57,7 +67,9 @@ func (self *Parser) Parse() ([]stmt.Stmt, []*error.Error) {
  */
 
 func (self *Parser) statement() (stmt.Stmt, *error.Error) {
-	if self.match(token.FOR) {
+	if self.match(token.USE) {
+		return self.use()
+	} else if self.match(token.FOR) {
 		return self._for()
 	} else if self.match(token.IF) {
 		return self._if()
@@ -237,7 +249,7 @@ func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	self.scope.Set(name.String(), nil)
+	self.scope.Set(name.String(), value.NewStructDefinition())
 	return stmt.NewStruct(name, methods), nil
 }
 
@@ -421,7 +433,7 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	self.scope.Set(name.String(), nil)
+	self.scope.Set(name.String(), value.NewFnDefinition())
 	return stmt.NewFn(name, params, returnType, body), nil
 }
 
@@ -452,6 +464,42 @@ func (self *Parser) block() ([]stmt.Stmt, *error.Error) {
 	}
 
 	return stmts, nil
+}
+
+func (self *Parser) use() (stmt.Stmt, *error.Error) {
+	name, err := self.consume(token.IDENTIFIER, "expected identifier")
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = self.consume(token.SEMI_COLON, "expected ';'")
+
+	if err != nil {
+		return nil, err
+	}
+
+	stmts := []stmt.Stmt{}
+	errs := []*error.Error{}
+	path := fmt.Sprintf(
+		"%s/%s",
+		filepath.Dir(self.path),
+		name.String(),
+	)
+
+	if _, err := os.Stat(fmt.Sprintf("%s.q", path)); err == nil {
+		stmts, errs = New(fmt.Sprintf("%s.q", path)).Parse()
+	} else if _, err := os.Stat(fmt.Sprintf("%s/mod.q", path)); err == nil {
+		stmts, errs = New(fmt.Sprintf("%s/mod.q", path)).Parse()
+	} else {
+		return nil, self.error("module not found")
+	}
+
+	if errs != nil && len(errs) > 0 {
+		self.errs = append(self.errs, errs...)
+	}
+
+	return stmt.NewUse(name, stmts), nil
 }
 
 /*
@@ -792,6 +840,7 @@ func (self *Parser) sync() {
 		}
 
 		switch self.curr.Kind {
+		case token.USE:
 		case token.STRUCT:
 		case token.FN:
 		case token.LET:
