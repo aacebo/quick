@@ -1,7 +1,7 @@
-use import_test::test;
+use import_test;
 
-print test.test(5, 6);
+print import_test.test(5, 6);
 print "\n";
 
-print test;
+print import_test.test;
 print "\n";

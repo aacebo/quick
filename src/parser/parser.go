@@ -470,15 +470,25 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 	path := []*token.Token{}
 
 	for {
-		name, err := self.consume(token.IDENTIFIER, "expected identifier")
+		var name *token.Token = nil
 
-		if err != nil {
-			return nil, err
+		if self.match(token.STAR) {
+			name = self.prev
+		}
+
+		if name == nil {
+			n, err := self.consume(token.IDENTIFIER, "expected identifier")
+
+			if err != nil {
+				return nil, err
+			}
+
+			name = n
 		}
 
 		path = append(path, name)
 
-		if !self.match(token.DOUBLE_COLON) {
+		if name.Kind == token.STAR || !self.match(token.DOUBLE_COLON) {
 			break
 		}
 	}
@@ -493,10 +503,12 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 	filePath := filepath.Dir(self.path) + "/"
 
 	for i, n := range path {
-		filePath += n.String()
+		if n.Kind == token.IDENTIFIER {
+			filePath += n.String()
 
-		if i < len(path)-1 {
-			filePath += "/"
+			if i < len(path)-1 && path[i+1].Kind != token.STAR {
+				filePath += "/"
+			}
 		}
 	}
 

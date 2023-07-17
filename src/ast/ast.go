@@ -208,7 +208,14 @@ func (self *AST) VisitUseStmt(s *stmt.Use) (value.Value, *error.Error) {
 		return nil, err
 	}
 
-	self.scope.Set(s.Path[len(s.Path)-1].String(), mod)
+	if s.Path[len(s.Path)-1].Kind == token.STAR {
+		for key, value := range mod.ast.scope.values {
+			self.scope.Set(key, value)
+		}
+	} else {
+		self.scope.Set(s.Path[len(s.Path)-1].String(), mod)
+	}
+
 	return nil, nil
 }
 
