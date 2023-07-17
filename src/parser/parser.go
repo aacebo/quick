@@ -254,13 +254,6 @@ func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) _for() (stmt.Stmt, *error.Error) {
-	parent := self.scope
-	self.scope = NewChildScope(parent)
-
-	defer func() {
-		self.scope = parent
-	}()
-
 	var init stmt.Stmt = nil
 	var cond expr.Expr = nil
 	var inc expr.Expr = nil
