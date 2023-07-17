@@ -1,4 +1,4 @@
-use import_test;
+use import_test::test;
 
-print import_test.test.test(5, 6);
+print test.test(5, 6);
 print "\n";

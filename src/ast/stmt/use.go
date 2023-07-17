@@ -7,13 +7,13 @@ import (
 )
 
 type Use struct {
-	Name  *token.Token
+	Path  []*token.Token
 	Stmts []Stmt
 }
 
-func NewUse(name *token.Token, stmts []Stmt) *Use {
+func NewUse(path []*token.Token, stmts []Stmt) *Use {
 	return &Use{
-		Name:  name,
+		Path:  path,
 		Stmts: stmts,
 	}
 }

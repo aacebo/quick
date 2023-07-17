@@ -8,6 +8,7 @@ const (
 	// singles
 	COMMA
 	DOT
+	COLON
 	SEMI_COLON
 	LEFT_PAREN
 	RIGHT_PAREN
@@ -18,6 +19,7 @@ const (
 	QUESTION_MARK
 
 	// doubles
+	DOUBLE_COLON
 	RETURN_TYPE
 
 	// arithmetic

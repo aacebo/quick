@@ -20,7 +20,6 @@ type Parser struct {
 	errs    []*error.Error
 	scanner *scanner.Scanner
 	scope   *Scope
-	imports map[string]*Parser
 }
 
 func New(path string) *Parser {
@@ -37,7 +36,6 @@ func New(path string) *Parser {
 		errs:    []*error.Error{},
 		scanner: scanner.New(path, src),
 		scope:   NewScope(),
-		imports: map[string]*Parser{},
 	}
 }
 
@@ -469,43 +467,56 @@ func (self *Parser) block() ([]stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) use() (stmt.Stmt, *error.Error) {
-	name, err := self.consume(token.IDENTIFIER, "expected identifier")
+	path := []*token.Token{}
 
-	if err != nil {
-		return nil, err
+	for {
+		name, err := self.consume(token.IDENTIFIER, "expected identifier")
+
+		if err != nil {
+			return nil, err
+		}
+
+		path = append(path, name)
+
+		if !self.match(token.DOUBLE_COLON) {
+			break
+		}
 	}
 
-	_, err = self.consume(token.SEMI_COLON, "expected ';'")
+	_, err := self.consume(token.SEMI_COLON, "expected ';'")
 
 	if err != nil {
 		return nil, err
 	}
 
 	var parser *Parser = nil
-	path := fmt.Sprintf(
-		"%s/%s",
-		filepath.Dir(self.path),
-		name.String(),
-	)
+	filePath := filepath.Dir(self.path) + "/"
 
-	if _, err := os.Stat(fmt.Sprintf("%s.q", path)); err == nil {
-		parser = New(fmt.Sprintf("%s.q", path))
-	} else if _, err := os.Stat(fmt.Sprintf("%s/mod.q", path)); err == nil {
-		parser = New(fmt.Sprintf("%s/mod.q", path))
+	for i, n := range path {
+		filePath += n.String()
+
+		if i < len(path)-1 {
+			filePath += "/"
+		}
+	}
+
+	if _, err := os.Stat(fmt.Sprintf("%s.q", filePath)); err == nil {
+		parser = New(fmt.Sprintf("%s.q", filePath))
+	} else if _, err := os.Stat(fmt.Sprintf("%s/mod.q", filePath)); err == nil {
+		parser = New(fmt.Sprintf("%s/mod.q", filePath))
 	}
 
 	if parser == nil {
 		return nil, self.error("module not found")
 	}
 
-	self.imports[path] = parser
 	stmts, errs := parser.Parse()
 
 	if errs != nil && len(errs) > 0 {
 		self.errs = append(self.errs, errs...)
 	}
 
-	return stmt.NewUse(name, stmts), nil
+	return stmt.NewUse(path, stmts), nil
 }
 
 /*

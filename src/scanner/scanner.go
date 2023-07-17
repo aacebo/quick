@@ -59,6 +59,13 @@ func (self *Scanner) Next() (*token.Token, *error.Error) {
 		return self.create(token.COMMA), nil
 	case '.':
 		return self.create(token.DOT), nil
+	case ':':
+		if self.peek() == ':' {
+			self.right++
+			return self.create(token.DOUBLE_COLON), nil
+		}
+
+		return self.create(token.COLON), nil
 	case ';':
 		return self.create(token.SEMI_COLON), nil
 	case '?':

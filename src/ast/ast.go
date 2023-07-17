@@ -208,7 +208,7 @@ func (self *AST) VisitUseStmt(s *stmt.Use) (value.Value, *error.Error) {
 		return nil, err
 	}
 
-	self.scope.Set(s.Name.String(), mod)
+	self.scope.Set(s.Path[len(s.Path)-1].String(), mod)
 	return nil, nil
 }
 
