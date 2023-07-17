@@ -38,3 +38,12 @@ func NewStructDefinition() *Definition {
 		IsNilable:   false,
 	}
 }
+
+func NewModDefinition() *Definition {
+	return &Definition{
+		Kind:        COMPLEX,
+		ComplexKind: MODULE,
+		IsConst:     true,
+		IsNilable:   false,
+	}
+}

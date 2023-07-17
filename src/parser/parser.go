@@ -521,6 +521,14 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		self.errs = append(self.errs, errs...)
 	}
 
+	if path[len(path)-1].Kind == token.STAR {
+		for key, value := range parser.scope.values {
+			self.scope.Set(key, value)
+		}
+	} else {
+		self.scope.Set(path[len(path)-1].String(), value.NewModDefinition())
+	}
+
 	return stmt.NewUse(path, stmts), nil
 }
 
