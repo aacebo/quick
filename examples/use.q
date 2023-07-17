@@ -1,4 +1,4 @@
 use import_test;
 
-print test(5, 6);
+print import_test.tester.test(5, 6);
 print "\n";

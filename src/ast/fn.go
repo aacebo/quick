@@ -45,5 +45,5 @@ func (self *Fn) Call(parent *Scope, args []value.Value) (value.Value, *error.Err
 		self.ast.scope.Set(param.Name.String(), args[i])
 	}
 
-	return self.ast.Interpret(self.stmt.Body)
+	return self.ast.InterpretChild(self.stmt.Body)
 }

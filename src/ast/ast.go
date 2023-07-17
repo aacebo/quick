@@ -27,12 +27,6 @@ func NewChild(parent *Scope) *AST {
 
 func (self *AST) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	var value value.Value = nil
-	parent := self.scope
-	self.scope = NewChildScope(parent)
-
-	defer func() {
-		self.scope = parent
-	}()
 
 	for _, stmt := range stmts {
 		v, err := self.Exec(stmt)
@@ -49,8 +43,14 @@ func (self *AST) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	return value, nil
 }
 
-func (self *AST) InterpretSibling(stmts []stmt.Stmt) (value.Value, *error.Error) {
+func (self *AST) InterpretChild(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	var value value.Value = nil
+	parent := self.scope
+	self.scope = NewChildScope(parent)
+
+	defer func() {
+		self.scope = parent
+	}()
 
 	for _, stmt := range stmts {
 		v, err := self.Exec(stmt)
@@ -80,7 +80,7 @@ func (self *AST) Exec(s stmt.Stmt) (value.Value, *error.Error) {
  */
 
 func (self *AST) VisitBlockStmt(s *stmt.Block) (value.Value, *error.Error) {
-	return self.Interpret(s.Stmts)
+	return self.InterpretChild(s.Stmts)
 }
 
 func (self *AST) VisitExprStmt(s *stmt.Expr) (value.Value, *error.Error) {
@@ -201,7 +201,15 @@ func (self *AST) VisitVarStmt(s *stmt.Var) (value.Value, *error.Error) {
 }
 
 func (self *AST) VisitUseStmt(s *stmt.Use) (value.Value, *error.Error) {
-	return self.InterpretSibling(s.Stmts)
+	mod := NewMod(s)
+	_, err := mod.Call()
+
+	if err != nil {
+		return nil, err
+	}
+
+	self.scope.Set(s.Name.String(), mod)
+	return nil, nil
 }
 
 /*
@@ -296,7 +304,7 @@ func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
 		return nil, error.New(
 			e.Paren.Path,
 			e.Paren.Ln,
-			err.Start,
+			e.Paren.Start,
 			e.Paren.End,
 			"expected function",
 		)
@@ -320,7 +328,24 @@ func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
 }
 
 func (self *AST) VisitGetExpr(e *expr.Get) (value.Value, *error.Error) {
-	return nil, nil
+	value, err := self.Eval(e.Object)
+
+	if err != nil {
+		return nil, err
+	}
+
+	switch value.(type) {
+	case *Mod:
+		return value.(*Mod).ast.scope.GetLocal(e.Name.String()), nil
+	}
+
+	return nil, error.New(
+		e.Name.Path,
+		e.Name.Ln,
+		e.Name.Start,
+		e.Name.End,
+		"expected object",
+	)
 }
 
 func (self *AST) VisitGroupingExpr(e *expr.Grouping) (value.Value, *error.Error) {

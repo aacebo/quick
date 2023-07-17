@@ -8,6 +8,7 @@ const (
 	MAP
 	FUNCTION
 	STRUCT
+	MODULE
 )
 
 type Complex interface {

@@ -20,6 +20,7 @@ type Parser struct {
 	errs    []*error.Error
 	scanner *scanner.Scanner
 	scope   *Scope
+	imports map[string]*Parser
 }
 
 func New(path string) *Parser {
@@ -36,6 +37,7 @@ func New(path string) *Parser {
 		errs:    []*error.Error{},
 		scanner: scanner.New(path, src),
 		scope:   NewScope(),
+		imports: map[string]*Parser{},
 	}
 }
 
@@ -479,8 +481,7 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	stmts := []stmt.Stmt{}
-	errs := []*error.Error{}
+	var parser *Parser = nil
 	path := fmt.Sprintf(
 		"%s/%s",
 		filepath.Dir(self.path),
@@ -488,12 +489,17 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 	)
 
 	if _, err := os.Stat(fmt.Sprintf("%s.q", path)); err == nil {
-		stmts, errs = New(fmt.Sprintf("%s.q", path)).Parse()
+		parser = New(fmt.Sprintf("%s.q", path))
 	} else if _, err := os.Stat(fmt.Sprintf("%s/mod.q", path)); err == nil {
-		stmts, errs = New(fmt.Sprintf("%s/mod.q", path)).Parse()
-	} else {
+		parser = New(fmt.Sprintf("%s/mod.q", path))
+	}
+
+	if parser == nil {
 		return nil, self.error("module not found")
 	}
+
+	self.imports[path] = parser
+	stmts, errs := parser.Parse()
 
 	if errs != nil && len(errs) > 0 {
 		self.errs = append(self.errs, errs...)
