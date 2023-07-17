@@ -1,1 +1,1 @@
-use tester;
+use test;
