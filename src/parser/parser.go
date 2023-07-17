@@ -511,20 +511,26 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		}
 	}
 
-	if _, err := os.Stat(fmt.Sprintf("%s.q", filePath)); err == nil {
-		parser = New(fmt.Sprintf("%s.q", filePath))
-	} else if _, err := os.Stat(fmt.Sprintf("%s/mod.q", filePath)); err == nil {
-		parser = New(fmt.Sprintf("%s/mod.q", filePath))
-	}
+	stmts, ok := cache[filePath]
 
-	if parser == nil {
-		return nil, self.error("module not found")
-	}
+	if !ok {
+		if _, err := os.Stat(fmt.Sprintf("%s.q", filePath)); err == nil {
+			parser = New(fmt.Sprintf("%s.q", filePath))
+		} else if _, err := os.Stat(fmt.Sprintf("%s/mod.q", filePath)); err == nil {
+			parser = New(fmt.Sprintf("%s/mod.q", filePath))
+		}
 
-	stmts, errs := parser.Parse()
+		if parser == nil {
+			return nil, self.error("module not found")
+		}
 
-	if errs != nil && len(errs) > 0 {
-		self.errs = append(self.errs, errs...)
+		_stmts, errs := parser.Parse()
+
+		if errs != nil && len(errs) > 0 {
+			self.errs = append(self.errs, errs...)
+		}
+
+		stmts = _stmts
 	}
 
 	if path[len(path)-1].Kind == token.STAR {
