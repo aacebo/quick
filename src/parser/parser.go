@@ -13,6 +13,8 @@ import (
 	"quick/src/value"
 )
 
+var cache = map[string][]stmt.Stmt{}
+
 type Parser struct {
 	path    string
 	curr    *token.Token
@@ -41,22 +43,26 @@ func New(path string) *Parser {
 
 func (self *Parser) Parse() ([]stmt.Stmt, []*error.Error) {
 	self.next()
-	stmts := []stmt.Stmt{}
+	stmts, ok := cache[self.path]
 
-	for {
-		if self.curr.Kind == token.EOF {
-			break
+	if !ok {
+		for {
+			if self.curr.Kind == token.EOF {
+				break
+			}
+
+			stmt, err := self.declaration()
+
+			if err != nil {
+				self.errs = append(self.errs, err)
+				self.sync()
+				continue
+			}
+
+			stmts = append(stmts, stmt)
 		}
 
-		stmt, err := self.declaration()
-
-		if err != nil {
-			self.errs = append(self.errs, err)
-			self.sync()
-			continue
-		}
-
-		stmts = append(stmts, stmt)
+		cache[self.path] = stmts
 	}
 
 	return stmts, self.errs
