@@ -13,12 +13,13 @@ import (
 	"quick/src/value"
 )
 
-var cache = map[string][]stmt.Stmt{}
+var cache = map[string]*Parser{}
 
 type Parser struct {
 	path    string
 	curr    *token.Token
 	prev    *token.Token
+	stmts   []stmt.Stmt
 	errs    []*error.Error
 	scanner *scanner.Scanner
 	scope   *Scope
@@ -35,6 +36,7 @@ func New(path string) *Parser {
 		path:    path,
 		curr:    nil,
 		prev:    nil,
+		stmts:   []stmt.Stmt{},
 		errs:    []*error.Error{},
 		scanner: scanner.New(path, src),
 		scope:   NewScope(),
@@ -43,29 +45,24 @@ func New(path string) *Parser {
 
 func (self *Parser) Parse() ([]stmt.Stmt, []*error.Error) {
 	self.next()
-	stmts, ok := cache[self.path]
 
-	if !ok {
-		for {
-			if self.curr.Kind == token.EOF {
-				break
-			}
-
-			stmt, err := self.declaration()
-
-			if err != nil {
-				self.errs = append(self.errs, err)
-				self.sync()
-				continue
-			}
-
-			stmts = append(stmts, stmt)
+	for {
+		if self.curr.Kind == token.EOF {
+			break
 		}
 
-		cache[self.path] = stmts
+		stmt, err := self.declaration()
+
+		if err != nil {
+			self.errs = append(self.errs, err)
+			self.sync()
+			continue
+		}
+
+		self.stmts = append(self.stmts, stmt)
 	}
 
-	return stmts, self.errs
+	return self.stmts, self.errs
 }
 
 /*
@@ -498,7 +495,6 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	var parser *Parser = nil
 	filePath := filepath.Dir(self.path) + "/"
 
 	for i, n := range path {
@@ -511,19 +507,21 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		}
 	}
 
-	stmts, ok := cache[filePath]
+	if _, err := os.Stat(fmt.Sprintf("%s.q", filePath)); err == nil {
+		filePath = fmt.Sprintf("%s.q", filePath)
+	} else if _, err := os.Stat(fmt.Sprintf("%s/mod.q", filePath)); err == nil {
+		filePath = fmt.Sprintf("%s/mod.q", filePath)
+	} else {
+		return nil, self.error("module not found")
+	}
 
-	if !ok {
-		if _, err := os.Stat(fmt.Sprintf("%s.q", filePath)); err == nil {
-			parser = New(fmt.Sprintf("%s.q", filePath))
-		} else if _, err := os.Stat(fmt.Sprintf("%s/mod.q", filePath)); err == nil {
-			parser = New(fmt.Sprintf("%s/mod.q", filePath))
-		}
+	parser, ok := cache[filePath]
+	stmts := []stmt.Stmt{}
 
-		if parser == nil {
-			return nil, self.error("module not found")
-		}
-
+	if ok {
+		stmts = parser.stmts
+	} else {
+		parser = New(filePath)
 		_stmts, errs := parser.Parse()
 
 		if errs != nil && len(errs) > 0 {
@@ -531,6 +529,7 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		}
 
 		stmts = _stmts
+		cache[filePath] = parser
 	}
 
 	if path[len(path)-1].Kind == token.STAR {
