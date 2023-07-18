@@ -14,6 +14,10 @@ func (self Slice[T]) Truthy() Bool {
 	return self != nil
 }
 
+func (self Slice[T]) Name() string {
+	return "slice"
+}
+
 func (self Slice[T]) String() string {
 	str := "["
 

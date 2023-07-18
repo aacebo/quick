@@ -14,6 +14,10 @@ func (self Map[K, V]) Truthy() Bool {
 	return self != nil
 }
 
+func (self Map[K, V]) Name() string {
+	return "map"
+}
+
 func (self Map[K, V]) String() string {
 	str := "{"
 

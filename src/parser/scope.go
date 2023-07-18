@@ -8,9 +8,15 @@ type Scope struct {
 }
 
 func NewScope() *Scope {
+	values := map[string]*value.Definition{}
+
+	for k, v := range value.TypeDefinitions {
+		values[k] = v
+	}
+
 	return &Scope{
 		parent: nil,
-		values: map[string]*value.Definition{},
+		values: values,
 	}
 }
 

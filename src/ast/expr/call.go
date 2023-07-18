@@ -20,6 +20,10 @@ func NewCall(callee Expr, paren *token.Token, args []Expr) *Call {
 	}
 }
 
+func (self *Call) CheckType() (*value.Definition, *error.Error) {
+	return self.Callee.CheckType()
+}
+
 func (self *Call) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitCallExpr(self)
 }

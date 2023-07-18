@@ -14,6 +14,10 @@ func (self String) Truthy() Bool {
 	return self != ""
 }
 
+func (self String) Name() string {
+	return "string"
+}
+
 func (self String) String() string {
 	return string(self)
 }

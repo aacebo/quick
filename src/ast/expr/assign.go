@@ -18,6 +18,10 @@ func NewAssign(name *token.Token, value Expr) *Assign {
 	}
 }
 
+func (self *Assign) CheckType() (*value.Definition, *error.Error) {
+	return self.Value.CheckType()
+}
+
 func (self *Assign) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitAssignExpr(self)
 }

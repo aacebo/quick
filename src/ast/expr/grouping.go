@@ -15,6 +15,10 @@ func NewGrouping(expr Expr) *Grouping {
 	}
 }
 
+func (self *Grouping) CheckType() (*value.Definition, *error.Error) {
+	return self.Expr.CheckType()
+}
+
 func (self *Grouping) Accept(v Visitor) (value.Value, *error.Error) {
 	return v.VisitGroupingExpr(self)
 }

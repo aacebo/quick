@@ -30,7 +30,7 @@ func (self Mod) Truthy() value.Bool {
 	return false
 }
 
-func (self Mod) String() string {
+func (self Mod) Name() string {
 	name := ""
 
 	for i, t := range self.stmt.Path {
@@ -40,8 +40,11 @@ func (self Mod) String() string {
 			name += "::"
 		}
 	}
+	return name
+}
 
-	return "<mod " + name + ">"
+func (self Mod) String() string {
+	return "<mod " + self.Name() + ">"
 }
 
 func (self *Mod) Call() (value.Value, *error.Error) {

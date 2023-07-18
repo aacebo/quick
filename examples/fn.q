@@ -1,6 +1,6 @@
 let echo = "hello world";
 
-fn test(a float, b int) -> int {
+fn test(a int, b int) -> int {
     print echo + "\n";
     return a + b;
 }

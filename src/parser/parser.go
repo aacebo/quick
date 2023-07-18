@@ -177,6 +177,7 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 	var kind *token.Token = nil
 	var nilable *token.Token = nil
 	var init expr.Expr = nil
+	var def *value.Definition = nil
 
 	keyword := self.prev
 	name, err := self.consume(token.IDENTIFIER, "expected variable name")
@@ -192,8 +193,15 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 	if self.match(token.TYPE) || self.match(token.IDENTIFIER) {
 		kind = self.prev
 
+		if !self.scope.Has(kind.String()) {
+			return nil, self.error("type '" + kind.String() + "' not found")
+		}
+
+		def := self.scope.Get(kind.String())
+
 		if self.match(token.QUESTION_MARK) {
 			nilable = self.prev
+			def.IsNilable = true
 		}
 	}
 
@@ -205,6 +213,17 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		}
 
 		init = _init
+		_type, err := init.CheckType()
+
+		if err != nil {
+			return nil, err
+		}
+
+		if def != nil && !def.Equals(_type) {
+			return nil, self.error("type '" + def.Name + "' is not '" + _type.Name + "'")
+		}
+
+		def = _type
 	}
 
 	_, err = self.consume(token.SEMI_COLON, "expected ';'")
@@ -213,11 +232,7 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	if self.scope.HasLocal(name.String()) {
-		return nil, self.error("duplicate name")
-	}
-
-	self.scope.Set(name.String(), nil)
+	self.scope.Set(name.String(), def)
 	return stmt.NewVar(keyword, name, kind, nilable, init), nil
 }
 
@@ -256,11 +271,7 @@ func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	if self.scope.Has(name.String()) {
-		return nil, self.error("duplicate name")
-	}
-
-	self.scope.Set(name.String(), value.NewStructDefinition())
+	self.scope.Set(name.String(), value.NewStructDefinition(name.String()))
 	return stmt.NewStruct(name, methods), nil
 }
 
@@ -334,7 +345,10 @@ func (self *Parser) _for() (stmt.Stmt, *error.Error) {
 	}
 
 	if cond == nil {
-		cond = expr.NewLiteral(value.Bool(true))
+		cond = expr.NewLiteral(
+			value.TypeDefinitions["bool"],
+			value.Bool(true),
+		)
 	}
 
 	return stmt.NewFor(init, cond, inc, body), nil
@@ -348,6 +362,12 @@ func (self *Parser) expr() (stmt.Stmt, *error.Error) {
 	}
 
 	_, err = self.consume(token.SEMI_COLON, "expected ';'")
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = expr.CheckType()
 
 	if err != nil {
 		return nil, err
@@ -374,6 +394,9 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	parent := self.scope
+	self.scope = NewChildScope(parent)
+
 	if self.curr.Kind != token.RIGHT_PAREN {
 		for {
 			var nilable *token.Token = nil
@@ -389,6 +412,10 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 				return nil, err
 			}
 
+			if !self.scope.Has(_type.String()) {
+				return nil, self.error("type '" + _type.String() + "' is undefined")
+			}
+
 			if self.match(token.QUESTION_MARK) {
 				nilable = self.prev
 			}
@@ -400,6 +427,11 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 				nilable,
 				nil,
 			))
+
+			self.scope.Set(
+				param.String(),
+				self.scope.Get(_type.String()),
+			)
 
 			if !self.match(token.COMMA) {
 				break
@@ -437,11 +469,8 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	if self.scope.HasLocal(name.String()) {
-		return nil, self.error("duplicate name")
-	}
-
-	self.scope.Set(name.String(), value.NewFnDefinition())
+	self.scope = parent
+	self.scope.Set(name.String(), value.NewFnDefinition(name.String()))
 	return stmt.NewFn(name, params, returnType, body), nil
 }
 
@@ -549,7 +578,10 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 			self.scope.Set(key, value)
 		}
 	} else {
-		self.scope.Set(path[len(path)-1].String(), value.NewModDefinition())
+		self.scope.Set(
+			path[len(path)-1].String(),
+			value.NewModDefinition(path[len(path)-1].String()),
+		)
 	}
 
 	return stmt.NewUse(path, stmts), nil
@@ -585,6 +617,12 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 				return nil, self.error("undefined identifier")
 			}
 
+			_, err = _var.CheckType()
+
+			if err != nil {
+				return nil, err
+			}
+
 			return expr.NewAssign(_var.Name, value), nil
 		case *expr.Get:
 			get := e.(*expr.Get)
@@ -593,10 +631,22 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 				return nil, self.error("undefined identifier")
 			}
 
+			_, err = get.CheckType()
+
+			if err != nil {
+				return nil, err
+			}
+
 			return expr.NewGet(get.Object, get.Name), nil
 		}
 
 		return nil, self.error("invalid assignment target")
+	}
+
+	_, err = e.CheckType()
+
+	if err != nil {
+		return nil, err
 	}
 
 	return e, nil
@@ -801,7 +851,10 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 			return nil, self.error(err.Error())
 		}
 
-		return expr.NewLiteral(value.Bool(v)), nil
+		return expr.NewLiteral(
+			self.scope.Get("bool"),
+			value.Bool(v),
+		), nil
 	} else if self.match(token.LINT) {
 		v, err := self.prev.Int()
 
@@ -809,7 +862,10 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 			return nil, self.error(err.Error())
 		}
 
-		return expr.NewLiteral(value.Int(v)), nil
+		return expr.NewLiteral(
+			self.scope.Get("int"),
+			value.Int(v),
+		), nil
 	} else if self.match(token.LFLOAT) {
 		v, err := self.prev.Float()
 
@@ -817,17 +873,43 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 			return nil, self.error(err.Error())
 		}
 
-		return expr.NewLiteral(value.Float(v)), nil
+		return expr.NewLiteral(
+			self.scope.Get("float"),
+			value.Float(v),
+		), nil
 	} else if self.match(token.LSTRING) {
-		return expr.NewLiteral(value.String(self.prev.String())), nil
+		return expr.NewLiteral(
+			self.scope.Get("string"),
+			value.String(self.prev.String()),
+		), nil
 	} else if self.match(token.LBYTE) {
-		return expr.NewLiteral(value.Byte(self.prev.Byte())), nil
+		return expr.NewLiteral(
+			self.scope.Get("byte"),
+			value.Byte(self.prev.Byte()),
+		), nil
 	} else if self.match(token.NIL) {
-		return expr.NewLiteral(value.Nil{}), nil
+		return expr.NewLiteral(
+			self.scope.Get("nil"),
+			value.Nil{},
+		), nil
 	} else if self.match(token.SELF) {
-		return expr.NewSelf(self.prev), nil
+		if !self.scope.Has("self") {
+			return nil, self.error("self is undefined")
+		}
+
+		return expr.NewSelf(
+			self.scope.Get("self"),
+			self.prev,
+		), nil
 	} else if self.match(token.IDENTIFIER) {
-		return expr.NewVar(self.prev), nil
+		if !self.scope.Has(self.prev.String()) {
+			return nil, self.error("undefined identifier '" + self.prev.String() + "'")
+		}
+
+		return expr.NewVar(
+			self.scope.Get(self.prev.String()),
+			self.prev,
+		), nil
 	} else if self.match(token.LEFT_PAREN) {
 		e, err := self.expression()
 

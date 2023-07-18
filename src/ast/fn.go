@@ -30,6 +30,10 @@ func (self Fn) Truthy() value.Bool {
 	return false
 }
 
+func (self Fn) Name() string {
+	return self.stmt.Name.String()
+}
+
 func (self Fn) String() string {
 	return "<fn " + self.stmt.Name.String() + ">"
 }
