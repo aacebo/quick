@@ -213,6 +213,10 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	if self.scope.HasLocal(name.String()) {
+		return nil, self.error("duplicate name")
+	}
+
 	self.scope.Set(name.String(), nil)
 	return stmt.NewVar(keyword, name, kind, nilable, init), nil
 }
@@ -250,6 +254,10 @@ func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if self.scope.Has(name.String()) {
+		return nil, self.error("duplicate name")
 	}
 
 	self.scope.Set(name.String(), value.NewStructDefinition())
@@ -427,6 +435,10 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if self.scope.HasLocal(name.String()) {
+		return nil, self.error("duplicate name")
 	}
 
 	self.scope.Set(name.String(), value.NewFnDefinition())
