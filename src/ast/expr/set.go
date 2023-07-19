@@ -20,26 +20,26 @@ func NewSet(object Expr, name *token.Token, value Expr) *Set {
 	}
 }
 
-func (self *Set) CheckType() (*value.Definition, *error.Error) {
-	object, err := self.Object.CheckType()
+func (self *Set) CheckValue() (value.Value, *error.Error) {
+	object, err := self.Object.CheckValue()
 
 	if err != nil {
 		return nil, err
 	}
 
-	value, err := self.Value.CheckType()
+	value, err := self.Value.CheckValue()
 
 	if err != nil {
 		return nil, err
 	}
 
-	if !object.Equals(value) {
+	if !object.TypeEq(value) {
 		return nil, error.New(
 			self.Name.Path,
 			self.Name.Ln,
 			self.Name.Start,
 			self.Name.End,
-			"type '"+object.Name+"' is not '"+value.Name+"'",
+			"type '"+object.Name()+"' is not '"+value.Name()+"'",
 		)
 	}
 

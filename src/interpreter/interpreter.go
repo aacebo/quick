@@ -1,4 +1,4 @@
-package ast
+package interpreter
 
 import (
 	"fmt"
@@ -7,25 +7,26 @@ import (
 	"quick/src/error"
 	"quick/src/token"
 	"quick/src/value"
+	"quick/src/value/callable"
 )
 
-type AST struct {
+type Interpreter struct {
 	scope *Scope
 }
 
-func New() *AST {
-	return &AST{
+func New() *Interpreter {
+	return &Interpreter{
 		scope: NewScope(),
 	}
 }
 
-func NewChild(parent *Scope) *AST {
-	return &AST{
+func NewChild(parent *Scope) *Interpreter {
+	return &Interpreter{
 		scope: NewChildScope(parent),
 	}
 }
 
-func (self *AST) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
+func (self *Interpreter) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	var value value.Value = nil
 
 	for _, stmt := range stmts {
@@ -43,7 +44,7 @@ func (self *AST) Interpret(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	return value, nil
 }
 
-func (self *AST) InterpretChild(stmts []stmt.Stmt) (value.Value, *error.Error) {
+func (self *Interpreter) InterpretChild(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	var value value.Value = nil
 	parent := self.scope
 	self.scope = NewChildScope(parent)
@@ -67,11 +68,11 @@ func (self *AST) InterpretChild(stmts []stmt.Stmt) (value.Value, *error.Error) {
 	return value, nil
 }
 
-func (self *AST) Eval(e expr.Expr) (value.Value, *error.Error) {
+func (self *Interpreter) Eval(e expr.Expr) (value.Value, *error.Error) {
 	return e.Accept(self)
 }
 
-func (self *AST) Exec(s stmt.Stmt) (value.Value, *error.Error) {
+func (self *Interpreter) Exec(s stmt.Stmt) (value.Value, *error.Error) {
 	return s.Accept(self)
 }
 
@@ -79,15 +80,15 @@ func (self *AST) Exec(s stmt.Stmt) (value.Value, *error.Error) {
  * Statements
  */
 
-func (self *AST) VisitBlockStmt(s *stmt.Block) (value.Value, *error.Error) {
+func (self *Interpreter) VisitBlockStmt(s *stmt.Block) (value.Value, *error.Error) {
 	return self.InterpretChild(s.Stmts)
 }
 
-func (self *AST) VisitExprStmt(s *stmt.Expr) (value.Value, *error.Error) {
+func (self *Interpreter) VisitExprStmt(s *stmt.Expr) (value.Value, *error.Error) {
 	return self.Eval(s.Expr)
 }
 
-func (self *AST) VisitForStmt(s *stmt.For) (value.Value, *error.Error) {
+func (self *Interpreter) VisitForStmt(s *stmt.For) (value.Value, *error.Error) {
 	parent := self.scope
 	self.scope = NewChildScope(parent)
 
@@ -130,13 +131,13 @@ func (self *AST) VisitForStmt(s *stmt.For) (value.Value, *error.Error) {
 	return nil, nil
 }
 
-func (self *AST) VisitFnStmt(s *stmt.Fn) (value.Value, *error.Error) {
-	fn := NewFn(s)
+func (self *Interpreter) VisitFnStmt(s *stmt.Fn) (value.Value, *error.Error) {
+	fn := callable.NewFn(s)
 	self.scope.Set(s.Name.String(), fn)
 	return nil, nil
 }
 
-func (self *AST) VisitIfStmt(s *stmt.If) (value.Value, *error.Error) {
+func (self *Interpreter) VisitIfStmt(s *stmt.If) (value.Value, *error.Error) {
 	v, err := self.Eval(s.Cond)
 
 	if err != nil {
@@ -152,7 +153,7 @@ func (self *AST) VisitIfStmt(s *stmt.If) (value.Value, *error.Error) {
 	return nil, nil
 }
 
-func (self *AST) VisitPrintStmt(s *stmt.Print) (value.Value, *error.Error) {
+func (self *Interpreter) VisitPrintStmt(s *stmt.Print) (value.Value, *error.Error) {
 	v, err := self.Eval(s.Expr)
 
 	if err != nil {
@@ -163,7 +164,7 @@ func (self *AST) VisitPrintStmt(s *stmt.Print) (value.Value, *error.Error) {
 	return nil, nil
 }
 
-func (self *AST) VisitReturnStmt(s *stmt.Return) (value.Value, *error.Error) {
+func (self *Interpreter) VisitReturnStmt(s *stmt.Return) (value.Value, *error.Error) {
 	var value value.Value = nil
 
 	if s.Value != nil {
@@ -179,11 +180,11 @@ func (self *AST) VisitReturnStmt(s *stmt.Return) (value.Value, *error.Error) {
 	return value, nil
 }
 
-func (self *AST) VisitStructStmt(s *stmt.Struct) (value.Value, *error.Error) {
+func (self *Interpreter) VisitStructStmt(s *stmt.Struct) (value.Value, *error.Error) {
 	return nil, nil
 }
 
-func (self *AST) VisitVarStmt(s *stmt.Var) (value.Value, *error.Error) {
+func (self *Interpreter) VisitVarStmt(s *stmt.Var) (value.Value, *error.Error) {
 	var value value.Value = value.Nil{}
 
 	if s.Init != nil {
@@ -200,19 +201,24 @@ func (self *AST) VisitVarStmt(s *stmt.Var) (value.Value, *error.Error) {
 	return nil, nil
 }
 
-func (self *AST) VisitUseStmt(s *stmt.Use) (value.Value, *error.Error) {
-	mod := NewMod(s)
-	_, err := mod.Call()
+func (self *Interpreter) VisitUseStmt(s *stmt.Use) (value.Value, *error.Error) {
+	mod := callable.NewMod(s)
+	sibling := New()
+	_, err := sibling.Interpret(s.Stmts)
 
 	if err != nil {
 		return nil, err
 	}
 
 	if s.Path[len(s.Path)-1].Kind == token.STAR {
-		for key, value := range mod.ast.scope.values {
+		for key, value := range sibling.scope.values {
 			self.scope.Set(key, value)
 		}
 	} else {
+		for key, value := range sibling.scope.values {
+			mod.Values[key] = value
+		}
+
 		self.scope.Set(s.Path[len(s.Path)-1].String(), mod)
 	}
 
@@ -223,7 +229,7 @@ func (self *AST) VisitUseStmt(s *stmt.Use) (value.Value, *error.Error) {
  * Expressions
  */
 
-func (self *AST) VisitAssignExpr(e *expr.Assign) (value.Value, *error.Error) {
+func (self *Interpreter) VisitAssignExpr(e *expr.Assign) (value.Value, *error.Error) {
 	value, err := self.Eval(e.Value)
 
 	if err != nil {
@@ -234,7 +240,7 @@ func (self *AST) VisitAssignExpr(e *expr.Assign) (value.Value, *error.Error) {
 	return value, nil
 }
 
-func (self *AST) VisitBinaryExpr(e *expr.Binary) (value.Value, *error.Error) {
+func (self *Interpreter) VisitBinaryExpr(e *expr.Binary) (value.Value, *error.Error) {
 	left, err := self.Eval(e.Left)
 
 	if err != nil {
@@ -286,7 +292,7 @@ func (self *AST) VisitBinaryExpr(e *expr.Binary) (value.Value, *error.Error) {
 	return nil, nil
 }
 
-func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
+func (self *Interpreter) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
 	callee, err := self.Eval(e.Callee)
 
 	if err != nil {
@@ -305,7 +311,7 @@ func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
 		args = append(args, v)
 	}
 
-	fn, ok := callee.(*Fn)
+	fn, ok := callee.(*callable.Fn)
 
 	if !ok {
 		return nil, error.New(
@@ -317,7 +323,7 @@ func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
 		)
 	}
 
-	if len(args) != len(fn.stmt.Params) {
+	if len(args) != len(fn.Stmt.Params) {
 		return nil, error.New(
 			e.Paren.Path,
 			e.Paren.Ln,
@@ -325,25 +331,31 @@ func (self *AST) VisitCallExpr(e *expr.Call) (value.Value, *error.Error) {
 			e.Paren.End,
 			fmt.Sprintf(
 				"expected %d arguments, received %d",
-				len(fn.stmt.Params),
+				len(fn.Stmt.Params),
 				len(args),
 			),
 		)
 	}
 
-	return fn.Call(self.scope, args)
+	interp := NewChild(self.scope)
+
+	for i, arg := range args {
+		interp.scope.Set(fn.Stmt.Params[i].Name.String(), arg)
+	}
+
+	return interp.InterpretChild(fn.Stmt.Body)
 }
 
-func (self *AST) VisitGetExpr(e *expr.Get) (value.Value, *error.Error) {
-	value, err := self.Eval(e.Object)
+func (self *Interpreter) VisitGetExpr(e *expr.Get) (value.Value, *error.Error) {
+	v, err := self.Eval(e.Object)
 
 	if err != nil {
 		return nil, err
 	}
 
-	switch value.(type) {
-	case *Mod:
-		return value.(*Mod).ast.scope.GetLocal(e.Name.String()), nil
+	switch v.(type) {
+	case *callable.Mod:
+		return v.(*callable.Mod).Values[e.Name.String()], nil
 	}
 
 	return nil, error.New(
@@ -355,15 +367,15 @@ func (self *AST) VisitGetExpr(e *expr.Get) (value.Value, *error.Error) {
 	)
 }
 
-func (self *AST) VisitGroupingExpr(e *expr.Grouping) (value.Value, *error.Error) {
+func (self *Interpreter) VisitGroupingExpr(e *expr.Grouping) (value.Value, *error.Error) {
 	return self.Eval(e.Expr)
 }
 
-func (self *AST) VisitLiteralExpr(e *expr.Literal) (value.Value, *error.Error) {
+func (self *Interpreter) VisitLiteralExpr(e *expr.Literal) (value.Value, *error.Error) {
 	return e.Value, nil
 }
 
-func (self *AST) VisitLogicalExpr(e *expr.Logical) (value.Value, *error.Error) {
+func (self *Interpreter) VisitLogicalExpr(e *expr.Logical) (value.Value, *error.Error) {
 	left, err := self.Eval(e.Left)
 
 	if err != nil {
@@ -383,15 +395,15 @@ func (self *AST) VisitLogicalExpr(e *expr.Logical) (value.Value, *error.Error) {
 	return self.Eval(e.Right)
 }
 
-func (self *AST) VisitSelfExpr(e *expr.Self) (value.Value, *error.Error) {
+func (self *Interpreter) VisitSelfExpr(e *expr.Self) (value.Value, *error.Error) {
 	return self.scope.GetLocal("self"), nil
 }
 
-func (self *AST) VisitSetExpr(e *expr.Set) (value.Value, *error.Error) {
+func (self *Interpreter) VisitSetExpr(e *expr.Set) (value.Value, *error.Error) {
 	return nil, nil
 }
 
-func (self *AST) VisitUnaryExpr(e *expr.Unary) (value.Value, *error.Error) {
+func (self *Interpreter) VisitUnaryExpr(e *expr.Unary) (value.Value, *error.Error) {
 	right, err := self.Eval(e.Right)
 
 	if err != nil {
@@ -410,7 +422,7 @@ func (self *AST) VisitUnaryExpr(e *expr.Unary) (value.Value, *error.Error) {
 	return nil, nil
 }
 
-func (self *AST) VisitVarExpr(e *expr.Var) (value.Value, *error.Error) {
+func (self *Interpreter) VisitVarExpr(e *expr.Var) (value.Value, *error.Error) {
 	if !self.scope.Has(e.Name.String()) {
 		return nil, error.New(
 			e.Name.Path,

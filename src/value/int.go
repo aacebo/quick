@@ -10,12 +10,24 @@ func (self Int) Kind() Kind {
 	return INT
 }
 
+func (self Int) ComplexKind() ComplexKind {
+	return NONE
+}
+
 func (self Int) Truthy() Bool {
 	return self > 0
 }
 
+func (self Int) Name() string {
+	return "int"
+}
+
 func (self Int) String() string {
 	return fmt.Sprintf("%d", self)
+}
+
+func (self Int) TypeEq(other Value) bool {
+	return other.Kind() == INT
 }
 
 func (self Int) Eq(other Comparable) Bool {

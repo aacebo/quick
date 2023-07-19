@@ -6,12 +6,24 @@ func (self Byte) Kind() Kind {
 	return BYTE
 }
 
+func (self Byte) ComplexKind() ComplexKind {
+	return NONE
+}
+
 func (self Byte) Truthy() Bool {
 	return self > 0
 }
 
+func (self Byte) Name() string {
+	return "byte"
+}
+
 func (self Byte) String() string {
 	return string(self)
+}
+
+func (self Byte) TypeEq(other Value) bool {
+	return other.Kind() == BYTE
 }
 
 func (self Byte) Eq(other Comparable) Bool {

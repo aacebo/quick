@@ -7,22 +7,19 @@ import (
 )
 
 type Var struct {
-	Type *value.Definition
-	Name *token.Token
+	Name  *token.Token
+	Value value.Value
 }
 
-func NewVar(
-	_type *value.Definition,
-	name *token.Token,
-) *Var {
+func NewVar(name *token.Token, value value.Value) *Var {
 	return &Var{
-		Type: _type,
-		Name: name,
+		Name:  name,
+		Value: value,
 	}
 }
 
-func (self *Var) CheckType() (*value.Definition, *error.Error) {
-	return self.Type, nil
+func (self *Var) CheckValue() (value.Value, *error.Error) {
+	return self.Value, nil
 }
 
 func (self *Var) Accept(v Visitor) (value.Value, *error.Error) {

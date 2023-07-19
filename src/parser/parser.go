@@ -11,6 +11,7 @@ import (
 	"quick/src/scanner"
 	"quick/src/token"
 	"quick/src/value"
+	"quick/src/value/callable"
 )
 
 var cache = map[string]*Parser{}
@@ -174,10 +175,9 @@ func (self *Parser) _return() (stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) _var() (stmt.Stmt, *error.Error) {
-	var kind *token.Token = nil
+	var _type value.Value = nil
 	var nilable *token.Token = nil
 	var init expr.Expr = nil
-	var def *value.Definition = nil
 
 	keyword := self.prev
 	name, err := self.consume(token.IDENTIFIER, "expected variable name")
@@ -191,39 +191,37 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 	}
 
 	if self.match(token.TYPE) || self.match(token.IDENTIFIER) {
-		kind = self.prev
+		kind := self.prev
 
 		if !self.scope.Has(kind.String()) {
 			return nil, self.error("type '" + kind.String() + "' not found")
 		}
 
-		def := self.scope.Get(kind.String())
+		_type = self.scope.Get(kind.String())
 
 		if self.match(token.QUESTION_MARK) {
 			nilable = self.prev
-			def.IsNilable = true
 		}
 	}
 
 	if self.match(token.EQ) {
-		_init, err := self.expression()
+		init, err = self.expression()
 
 		if err != nil {
 			return nil, err
 		}
 
-		init = _init
-		_type, err := init.CheckType()
+		value, err := init.CheckValue()
 
 		if err != nil {
 			return nil, err
 		}
 
-		if def != nil && !def.Equals(_type) {
-			return nil, self.error("type '" + def.Name + "' is not '" + _type.Name + "'")
+		if _type != nil && !_type.TypeEq(value) {
+			return nil, self.error("type '" + _type.String() + "' is not '" + value.String() + "'")
 		}
 
-		def = _type
+		_type = value
 	}
 
 	_, err = self.consume(token.SEMI_COLON, "expected ';'")
@@ -232,8 +230,8 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	self.scope.Set(name.String(), def)
-	return stmt.NewVar(keyword, name, kind, nilable, init), nil
+	self.scope.Set(name.String(), _type)
+	return stmt.NewVar(keyword, name, _type, nilable, init), nil
 }
 
 func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
@@ -271,8 +269,9 @@ func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	self.scope.Set(name.String(), value.NewStructDefinition(name.String()))
-	return stmt.NewStruct(name, methods), nil
+	v := stmt.NewStruct(name, methods)
+	self.scope.Set(name.String(), nil)
+	return v, nil
 }
 
 func (self *Parser) _for() (stmt.Stmt, *error.Error) {
@@ -289,31 +288,25 @@ func (self *Parser) _for() (stmt.Stmt, *error.Error) {
 	if self.match(token.SEMI_COLON) {
 		init = nil
 	} else if self.match(token.LET) || self.match(token.CONST) {
-		s, err := self._var()
+		init, err = self._var()
 
 		if err != nil {
 			return nil, err
 		}
-
-		init = s
 	} else {
-		s, err := self.expr()
+		init, err = self.expr()
 
 		if err != nil {
 			return nil, err
 		}
-
-		init = s
 	}
 
 	if self.curr.Kind != token.SEMI_COLON {
-		e, err := self.expression()
+		cond, err = self.expression()
 
 		if err != nil {
 			return nil, err
 		}
-
-		cond = e
 	}
 
 	_, err = self.consume(token.SEMI_COLON, "expected ';'")
@@ -323,13 +316,11 @@ func (self *Parser) _for() (stmt.Stmt, *error.Error) {
 	}
 
 	if self.curr.Kind != token.RIGHT_PAREN {
-		e, err := self.expression()
+		inc, err = self.expression()
 
 		if err != nil {
 			return nil, err
 		}
-
-		inc = e
 	}
 
 	_, err = self.consume(token.RIGHT_PAREN, "expected ')'")
@@ -345,10 +336,7 @@ func (self *Parser) _for() (stmt.Stmt, *error.Error) {
 	}
 
 	if cond == nil {
-		cond = expr.NewLiteral(
-			value.TypeDefinitions["bool"],
-			value.Bool(true),
-		)
+		cond = expr.NewLiteral(value.Bool(true))
 	}
 
 	return stmt.NewFor(init, cond, inc, body), nil
@@ -367,7 +355,7 @@ func (self *Parser) expr() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	_, err = expr.CheckType()
+	_, err = expr.CheckValue()
 
 	if err != nil {
 		return nil, err
@@ -377,7 +365,7 @@ func (self *Parser) expr() (stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) fn() (stmt.Stmt, *error.Error) {
-	params := []*stmt.Var{}
+	vars := []*stmt.Var{}
 	name, err := self.consume(token.IDENTIFIER, "expected function name")
 
 	if err != nil {
@@ -416,14 +404,16 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 				return nil, self.error("type '" + _type.String() + "' is undefined")
 			}
 
+			type_value := self.scope.Get(_type.String())
+
 			if self.match(token.QUESTION_MARK) {
 				nilable = self.prev
 			}
 
-			params = append(params, stmt.NewVar(
+			vars = append(vars, stmt.NewVar(
 				nil,
 				param,
-				_type,
+				type_value,
 				nilable,
 				nil,
 			))
@@ -469,9 +459,20 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	v := stmt.NewFn(
+		name,
+		vars,
+		self.scope.Get(returnType.String()),
+		body,
+	)
+
 	self.scope = parent
-	self.scope.Set(name.String(), value.NewFnDefinition(name.String()))
-	return stmt.NewFn(name, params, returnType, body), nil
+	self.scope.Set(
+		name.String(),
+		callable.NewFn(v),
+	)
+
+	return v, nil
 }
 
 func (self *Parser) block() ([]stmt.Stmt, *error.Error) {
@@ -573,18 +574,23 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		cache[filePath] = parser
 	}
 
+	v := stmt.NewUse(path, stmts)
+
 	if path[len(path)-1].Kind == token.STAR {
 		for key, value := range parser.scope.values {
 			self.scope.Set(key, value)
 		}
 	} else {
-		self.scope.Set(
-			path[len(path)-1].String(),
-			value.NewModDefinition(path[len(path)-1].String()),
-		)
+		mod := callable.NewMod(v)
+
+		for key, value := range parser.scope.values {
+			mod.Values[key] = value
+		}
+
+		self.scope.Set(mod.Name(), mod)
 	}
 
-	return stmt.NewUse(path, stmts), nil
+	return v, nil
 }
 
 /*
@@ -617,7 +623,7 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 				return nil, self.error("undefined identifier")
 			}
 
-			_, err = _var.CheckType()
+			_, err = _var.CheckValue()
 
 			if err != nil {
 				return nil, err
@@ -631,7 +637,7 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 				return nil, self.error("undefined identifier")
 			}
 
-			_, err = get.CheckType()
+			_, err = get.CheckValue()
 
 			if err != nil {
 				return nil, err
@@ -643,7 +649,7 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 		return nil, self.error("invalid assignment target")
 	}
 
-	_, err = e.CheckType()
+	_, err = e.CheckValue()
 
 	if err != nil {
 		return nil, err
@@ -794,6 +800,7 @@ func (self *Parser) unary() (expr.Expr, *error.Error) {
 }
 
 func (self *Parser) call() (expr.Expr, *error.Error) {
+	var fn *callable.Fn = nil
 	e, err := self.primary()
 
 	if err != nil {
@@ -804,7 +811,25 @@ func (self *Parser) call() (expr.Expr, *error.Error) {
 		if self.match(token.LEFT_PAREN) {
 			args := []expr.Expr{}
 
+			switch e.(type) {
+			case *expr.Var:
+				v := e.(*expr.Var)
+				fn = self.scope.Get(v.Name.String()).(*callable.Fn)
+			case *expr.Get:
+				v := e.(*expr.Get)
+				obj, err := v.CheckValue()
+
+				if err != nil {
+					return nil, err
+				}
+
+				mod := obj.(*callable.Mod)
+				fn = mod.Values[v.Name.String()].(*callable.Fn)
+			}
+
 			if self.curr.Kind != token.RIGHT_PAREN {
+				i := 0
+
 				for {
 					e, err := self.expression()
 
@@ -814,9 +839,29 @@ func (self *Parser) call() (expr.Expr, *error.Error) {
 
 					args = append(args, e)
 
+					if i > len(fn.Stmt.Params)-1 {
+						return nil, self.error("too many arguments")
+					}
+
+					arg_value, err := e.CheckValue()
+
+					if err != nil {
+						return nil, err
+					}
+
+					if !fn.Stmt.Params[i].Type.TypeEq(arg_value) {
+						return nil, self.error(fmt.Sprintf(
+							"expected type '%s', received '%s'",
+							fn.Stmt.Params[i].Type.Name(),
+							arg_value.Name(),
+						))
+					}
+
 					if !self.match(token.COMMA) {
 						break
 					}
+
+					i++
 				}
 			}
 
@@ -824,6 +869,14 @@ func (self *Parser) call() (expr.Expr, *error.Error) {
 
 			if err != nil {
 				return nil, err
+			}
+
+			if len(args) != len(fn.Stmt.Params) {
+				return nil, self.error(fmt.Sprintf(
+					"expected %d arguments, received %d",
+					len(fn.Stmt.Params),
+					len(args),
+				))
 			}
 
 			e = expr.NewCall(e, paren, args)
@@ -851,10 +904,7 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 			return nil, self.error(err.Error())
 		}
 
-		return expr.NewLiteral(
-			self.scope.Get("bool"),
-			value.Bool(v),
-		), nil
+		return expr.NewLiteral(value.Bool(v)), nil
 	} else if self.match(token.LINT) {
 		v, err := self.prev.Int()
 
@@ -862,10 +912,7 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 			return nil, self.error(err.Error())
 		}
 
-		return expr.NewLiteral(
-			self.scope.Get("int"),
-			value.Int(v),
-		), nil
+		return expr.NewLiteral(value.Int(v)), nil
 	} else if self.match(token.LFLOAT) {
 		v, err := self.prev.Float()
 
@@ -873,33 +920,21 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 			return nil, self.error(err.Error())
 		}
 
-		return expr.NewLiteral(
-			self.scope.Get("float"),
-			value.Float(v),
-		), nil
+		return expr.NewLiteral(value.Float(v)), nil
 	} else if self.match(token.LSTRING) {
-		return expr.NewLiteral(
-			self.scope.Get("string"),
-			value.String(self.prev.String()),
-		), nil
+		return expr.NewLiteral(value.String(self.prev.String())), nil
 	} else if self.match(token.LBYTE) {
-		return expr.NewLiteral(
-			self.scope.Get("byte"),
-			value.Byte(self.prev.Byte()),
-		), nil
+		return expr.NewLiteral(value.Byte(self.prev.Byte())), nil
 	} else if self.match(token.NIL) {
-		return expr.NewLiteral(
-			self.scope.Get("nil"),
-			value.Nil{},
-		), nil
+		return expr.NewLiteral(value.Nil{}), nil
 	} else if self.match(token.SELF) {
 		if !self.scope.Has("self") {
 			return nil, self.error("self is undefined")
 		}
 
 		return expr.NewSelf(
-			self.scope.Get("self"),
 			self.prev,
+			self.scope.Get("self"),
 		), nil
 	} else if self.match(token.IDENTIFIER) {
 		if !self.scope.Has(self.prev.String()) {
@@ -907,8 +942,8 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 		}
 
 		return expr.NewVar(
-			self.scope.Get(self.prev.String()),
 			self.prev,
+			self.scope.Get(self.prev.String()),
 		), nil
 	} else if self.match(token.LEFT_PAREN) {
 		e, err := self.expression()

@@ -10,12 +10,24 @@ func (self Float) Kind() Kind {
 	return FLOAT
 }
 
+func (self Float) ComplexKind() ComplexKind {
+	return NONE
+}
+
 func (self Float) Truthy() Bool {
 	return self > 0
 }
 
+func (self Float) Name() string {
+	return "float"
+}
+
 func (self Float) String() string {
 	return fmt.Sprintf("%f", self)
+}
+
+func (self Float) TypeEq(other Value) bool {
+	return other.Kind() == FLOAT
 }
 
 func (self Float) Eq(other Comparable) Bool {

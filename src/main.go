@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"quick/src/ast"
 	"quick/src/ast/stmt"
+	"quick/src/interpreter"
 	"quick/src/parser"
 )
 
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	for _, _stmts := range stmts {
-		value, err := ast.New().Interpret(_stmts)
+		value, err := interpreter.New().Interpret(_stmts)
 
 		if err != nil {
 			log.Fatalln(err)

@@ -13,6 +13,9 @@ const (
 
 type Value interface {
 	Kind() Kind
+	ComplexKind() ComplexKind
 	Truthy() Bool
+	Name() string
 	String() string
+	TypeEq(Value) bool
 }

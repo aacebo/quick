@@ -15,8 +15,8 @@ func NewGrouping(expr Expr) *Grouping {
 	}
 }
 
-func (self *Grouping) CheckType() (*value.Definition, *error.Error) {
-	return self.Expr.CheckType()
+func (self *Grouping) CheckValue() (value.Value, *error.Error) {
+	return self.Expr.CheckValue()
 }
 
 func (self *Grouping) Accept(v Visitor) (value.Value, *error.Error) {

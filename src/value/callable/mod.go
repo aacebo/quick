@@ -1,20 +1,19 @@
-package ast
+package callable
 
 import (
 	"quick/src/ast/stmt"
-	"quick/src/error"
 	"quick/src/value"
 )
 
 type Mod struct {
-	stmt *stmt.Use
-	ast  *AST
+	Stmt   *stmt.Use
+	Values map[string]value.Value
 }
 
 func NewMod(stmt *stmt.Use) *Mod {
 	return &Mod{
-		stmt: stmt,
-		ast:  New(),
+		Stmt:   stmt,
+		Values: map[string]value.Value{},
 	}
 }
 
@@ -33,10 +32,10 @@ func (self Mod) Truthy() value.Bool {
 func (self Mod) Name() string {
 	name := ""
 
-	for i, t := range self.stmt.Path {
-		name += t.String()
+	for i, p := range self.Stmt.Path {
+		name += p.String()
 
-		if i < len(self.stmt.Path)-1 {
+		if i < len(self.Stmt.Path)-1 {
 			name += "::"
 		}
 	}
@@ -47,6 +46,7 @@ func (self Mod) String() string {
 	return "<mod " + self.Name() + ">"
 }
 
-func (self *Mod) Call() (value.Value, *error.Error) {
-	return self.ast.Interpret(self.stmt.Stmts)
+func (self Mod) TypeEq(other value.Value) bool {
+	return other.Kind() == value.COMPLEX &&
+		other.ComplexKind() == value.MODULE
 }

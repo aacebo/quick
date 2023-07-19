@@ -22,6 +22,11 @@ func (self String) String() string {
 	return string(self)
 }
 
+func (self String) TypeEq(other Value) bool {
+	return other.Kind() == COMPLEX &&
+		other.ComplexKind() == STRING
+}
+
 func (self String) Eq(other Comparable) Bool {
 	return self == other.(String)
 }

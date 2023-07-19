@@ -20,26 +20,26 @@ func NewBinary(left Expr, op *token.Token, right Expr) *Binary {
 	}
 }
 
-func (self *Binary) CheckType() (*value.Definition, *error.Error) {
-	left, err := self.Left.CheckType()
+func (self *Binary) CheckValue() (value.Value, *error.Error) {
+	left, err := self.Left.CheckValue()
 
 	if err != nil {
 		return nil, err
 	}
 
-	right, err := self.Right.CheckType()
+	right, err := self.Right.CheckValue()
 
 	if err != nil {
 		return nil, err
 	}
 
-	if !left.Equals(right) {
+	if !left.TypeEq(right) {
 		return nil, error.New(
 			self.Op.Path,
 			self.Op.Ln,
 			self.Op.Start,
 			self.Op.End,
-			"type '"+left.Name+"' is not '"+right.Name+"'",
+			"type '"+left.Name()+"' is not '"+right.Name()+"'",
 		)
 	}
 

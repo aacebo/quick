@@ -31,3 +31,8 @@ func (self Slice[T]) String() string {
 
 	return str + "]"
 }
+
+func (self Slice[T]) TypeEq(other Value) bool {
+	return other.Kind() == COMPLEX &&
+		other.ComplexKind() == SLICE
+}

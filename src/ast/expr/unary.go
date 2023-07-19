@@ -18,8 +18,8 @@ func NewUnary(op *token.Token, right Expr) *Unary {
 	}
 }
 
-func (self *Unary) CheckType() (*value.Definition, *error.Error) {
-	return self.Right.CheckType()
+func (self *Unary) CheckValue() (value.Value, *error.Error) {
+	return self.Right.CheckValue()
 }
 
 func (self *Unary) Accept(v Visitor) (value.Value, *error.Error) {

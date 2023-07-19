@@ -27,3 +27,8 @@ func (self Map[K, V]) String() string {
 
 	return str + "}"
 }
+
+func (self Map[K, V]) TypeEq(other Value) bool {
+	return other.Kind() == COMPLEX &&
+		other.ComplexKind() == MAP
+}

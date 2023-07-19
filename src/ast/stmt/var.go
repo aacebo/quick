@@ -10,7 +10,7 @@ import (
 type Var struct {
 	Keyword *token.Token
 	Name    *token.Token
-	Type    *token.Token
+	Type    value.Value
 	Nilable *token.Token
 	Init    expr.Expr
 }
@@ -18,7 +18,7 @@ type Var struct {
 func NewVar(
 	keyword *token.Token,
 	name *token.Token,
-	_type *token.Token,
+	_type value.Value,
 	nilable *token.Token,
 	init expr.Expr,
 ) *Var {

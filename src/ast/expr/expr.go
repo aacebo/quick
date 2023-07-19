@@ -6,6 +6,6 @@ import (
 )
 
 type Expr interface {
-	CheckType() (*value.Definition, *error.Error)
+	CheckValue() (value.Value, *error.Error)
 	Accept(Visitor) (value.Value, *error.Error)
 }

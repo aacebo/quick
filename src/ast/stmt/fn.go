@@ -9,14 +9,14 @@ import (
 type Fn struct {
 	Name       *token.Token
 	Params     []*Var
-	ReturnType *token.Token
+	ReturnType value.Value
 	Body       []Stmt
 }
 
 func NewFn(
 	name *token.Token,
 	params []*Var,
-	returnType *token.Token,
+	returnType value.Value,
 	body []Stmt,
 ) *Fn {
 	return &Fn{

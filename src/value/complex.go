@@ -11,9 +11,3 @@ const (
 	STRUCT
 	MODULE
 )
-
-type Complex interface {
-	ComplexKind() ComplexKind
-	Name() string
-	String() string
-}
