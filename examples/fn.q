@@ -5,5 +5,5 @@ fn test(a int, b int) -> int {
     return a + b;
 }
 
-print test(1, "test");
+print test(1, 56);
 print "\n\n";
