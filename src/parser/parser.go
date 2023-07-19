@@ -848,6 +848,11 @@ func (self *Parser) call() (expr.Expr, *error.Error) {
 				}
 
 				mod := obj.(*callable.Mod)
+
+				if mod.Values[v.Name.String()] == nil {
+					return nil, self.error(v.Name.String() + " is undefined")
+				}
+
 				fn = mod.Values[v.Name.String()].(*callable.Fn)
 			}
 
