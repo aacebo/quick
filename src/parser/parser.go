@@ -152,7 +152,7 @@ func (self *Parser) _print() (stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) _return() (stmt.Stmt, *error.Error) {
-	var value expr.Expr = nil
+	var value expr.Expr = expr.NewLiteral(value.Nil{})
 	keyword := self.prev
 
 	if self.curr.Kind != token.SEMI_COLON {
@@ -365,6 +365,7 @@ func (self *Parser) expr() (stmt.Stmt, *error.Error) {
 }
 
 func (self *Parser) fn() (stmt.Stmt, *error.Error) {
+	var return_type value.Value = value.Nil{}
 	vars := []*stmt.Var{}
 	name, err := self.consume(token.IDENTIFIER, "expected function name")
 
@@ -435,16 +436,18 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	_, err = self.consume(token.RETURN_TYPE, "expected '->'")
+	if self.match(token.RETURN_TYPE) {
+		t, err := self.consume(token.TYPE, "expected return type")
 
-	if err != nil {
-		return nil, err
-	}
+		if err != nil {
+			return nil, err
+		}
 
-	returnType, err := self.consume(token.TYPE, "expected return type")
+		if !self.scope.Has(t.String()) {
+			return nil, self.error("type '" + t.String() + "' not found")
+		}
 
-	if err != nil {
-		return nil, err
+		return_type = self.scope.Get(t.String())
 	}
 
 	_, err = self.consume(token.LEFT_BRACE, "expected '{'")
@@ -459,10 +462,31 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
+	ret := body[len(body)-1]
+
+	switch ret.(type) {
+	case *stmt.Return:
+		v, err := ret.(*stmt.Return).Value.CheckValue()
+
+		if err != nil {
+			return nil, err
+		}
+
+		if !return_type.TypeEq(v) {
+			return nil, self.error(fmt.Sprintf(
+				"expected return type '%s', received '%s'",
+				return_type.Name(),
+				v.Name(),
+			))
+		}
+	default:
+		return nil, self.error("missing return statement")
+	}
+
 	v := stmt.NewFn(
 		name,
 		vars,
-		self.scope.Get(returnType.String()),
+		return_type,
 		body,
 	)
 
