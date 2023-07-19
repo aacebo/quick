@@ -179,6 +179,7 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 	var nilable *token.Token = nil
 	var init expr.Expr = nil
 
+	isSlice := false
 	keyword := self.prev
 	name, err := self.consume(token.IDENTIFIER, "expected variable name")
 
@@ -188,6 +189,16 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 
 	if self.scope.HasLocal(name.String()) {
 		return nil, self.error("duplicate name")
+	}
+
+	if self.match(token.LEFT_BRACKET) {
+		_, err = self.consume(token.RIGHT_BRACKET, "expected ']'")
+
+		if err != nil {
+			return nil, err
+		}
+
+		isSlice = true
 	}
 
 	if self.match(token.TYPE) || self.match(token.IDENTIFIER) {
@@ -204,6 +215,10 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		}
 	}
 
+	if isSlice {
+		_type = value.NewSlice(_type, []value.Value{})
+	}
+
 	if self.match(token.EQ) {
 		init, err = self.expression()
 
@@ -218,7 +233,7 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		}
 
 		if _type != nil && !_type.TypeEq(value) {
-			return nil, self.error("type '" + _type.String() + "' is not '" + value.String() + "'")
+			return nil, self.error("type '" + _type.Name() + "' is not '" + value.Name() + "'")
 		}
 
 		_type = value
@@ -983,6 +998,49 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 
 		self.consume(token.RIGHT_PAREN, "expected ')'")
 		return expr.NewGrouping(e), nil
+	} else if self.match(token.LEFT_BRACKET) {
+		var _type value.Value = nil
+		slice := []value.Value{}
+
+		if !self.match(token.RIGHT_BRACKET) {
+			for {
+				e, err := self.expression()
+
+				if err != nil {
+					return nil, err
+				}
+
+				v, err := e.CheckValue()
+
+				if err != nil {
+					return nil, err
+				}
+
+				if _type == nil {
+					_type = v
+				} else if !_type.TypeEq(v) {
+					return nil, self.error(fmt.Sprintf(
+						"expected type '%s', received '%s'",
+						_type.Name(),
+						v.Name(),
+					))
+				}
+
+				slice = append(slice, v)
+
+				if !self.match(token.COMMA) {
+					break
+				}
+			}
+		}
+
+		_, err := self.consume(token.RIGHT_BRACKET, "expected ']'")
+
+		if err != nil {
+			return nil, err
+		}
+
+		return expr.NewLiteral(value.NewSlice(_type, slice)), nil
 	}
 
 	return nil, self.error("expected expression")
