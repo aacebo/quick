@@ -15,6 +15,7 @@ type Visitor interface {
 	VisitLogicalExpr(*Logical) (*reflect.Value, *error.Error)
 	VisitSelfExpr(*Self) (*reflect.Value, *error.Error)
 	VisitSetExpr(*Set) (*reflect.Value, *error.Error)
+	VisitSliceExpr(*Slice) (*reflect.Value, *error.Error)
 	VisitUnaryExpr(*Unary) (*reflect.Value, *error.Error)
 	VisitVarExpr(*Var) (*reflect.Value, *error.Error)
 }

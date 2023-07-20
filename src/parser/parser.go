@@ -1009,6 +1009,7 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 		return expr.NewGrouping(e), nil
 	} else if self.match(token.LEFT_BRACKET) {
 		var _type reflect.Type = nil
+		items := []expr.Expr{}
 
 		if !self.match(token.RIGHT_BRACKET) {
 			for {
@@ -1034,6 +1035,8 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 					))
 				}
 
+				items = append(items, e)
+
 				if !self.match(token.COMMA) {
 					break
 				}
@@ -1046,7 +1049,7 @@ func (self *Parser) primary() (expr.Expr, *error.Error) {
 			return nil, err
 		}
 
-		return expr.NewLiteral(reflect.NewSlice(_type, []*reflect.Value{})), nil
+		return expr.NewSlice(_type, items), nil
 	}
 
 	return nil, self.error("expected expression")

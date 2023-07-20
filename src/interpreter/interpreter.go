@@ -412,6 +412,22 @@ func (self *Interpreter) VisitSetExpr(e *expr.Set) (*reflect.Value, *error.Error
 	return nil, nil
 }
 
+func (self *Interpreter) VisitSliceExpr(e *expr.Slice) (*reflect.Value, *error.Error) {
+	slice := reflect.NewSlice(e.Type, []*reflect.Value{})
+
+	for _, exp := range e.Items {
+		value, err := self.Eval(exp)
+
+		if err != nil {
+			return nil, err
+		}
+
+		slice.Push(value)
+	}
+
+	return slice, nil
+}
+
 func (self *Interpreter) VisitUnaryExpr(e *expr.Unary) (*reflect.Value, *error.Error) {
 	right, err := self.Eval(e.Right)
 
