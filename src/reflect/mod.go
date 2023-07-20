@@ -31,9 +31,15 @@ func (self Value) GetExport(name string) Value {
 }
 
 func (self *Value) SetExport(name string, value Value) {
-	v := self.Mod()
-	v[name] = value
-	self._value = v
+	mod := self.Mod()
+	v, ok := mod[name]
+
+	if !ok || !v._type.Equals(value._type) {
+		panic("invalid type")
+	}
+
+	mod[name] = value
+	self._value = mod
 }
 
 func (self *Value) DelExport(name string) {

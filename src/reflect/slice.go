@@ -30,7 +30,19 @@ func (self Value) SubSlice(i int, j int) []Value {
 }
 
 func (self *Value) Push(value Value) {
+	if self._type.Equals(value._type) {
+		panic("invalid type")
+	}
+
 	v := self.Slice()
 	v = append(v, value)
 	self._value = v
+}
+
+func (self *Value) Pop() Value {
+	v := self.Slice()
+	removed := v[len(v)-1]
+	v = v[:len(v)-1]
+	self._value = v
+	return removed
 }

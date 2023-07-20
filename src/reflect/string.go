@@ -22,3 +22,11 @@ func (self Value) String() string {
 func (self *Value) SetString(value string) {
 	self._value = value
 }
+
+func (self Value) SubString(i int, j int) string {
+	return self.String()[i:j]
+}
+
+func (self *Value) Append(value string) {
+	self._value = self.String() + value
+}
