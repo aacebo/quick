@@ -14,6 +14,10 @@ func (self StringType) String() string {
 	return String.String()
 }
 
+func (self StringType) Len() int {
+	panic("method not supported")
+}
+
 func (self StringType) Comparable() bool {
 	return true
 }
@@ -26,6 +30,6 @@ func (self StringType) Collection() bool {
 	return true
 }
 
-func (self StringType) Len() int {
-	panic("method not supported")
+func (self StringType) Equals(t Type) bool {
+	return t.Kind() == String
 }

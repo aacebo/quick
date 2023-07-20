@@ -25,6 +25,10 @@ func (self FnType) String() string {
 	return fmt.Sprintf("<fn %s>", self.name)
 }
 
+func (self FnType) Len() int {
+	panic("method not supported")
+}
+
 func (self FnType) Comparable() bool {
 	return false
 }
@@ -37,14 +41,34 @@ func (self FnType) Collection() bool {
 	return false
 }
 
-func (self FnType) Len() int {
-	panic("method not supported")
-}
-
 func (self FnType) Params() []Param {
 	return self.params
 }
 
 func (self FnType) ReturnType() Type {
 	return self.returnType
+}
+
+func (self FnType) Equals(t Type) bool {
+	if t.Kind() != Fn {
+		return false
+	}
+
+	fn := t.(FnType)
+
+	if len(self.params) != len(fn.params) {
+		return false
+	}
+
+	if !self.returnType.Equals(fn.returnType) {
+		return false
+	}
+
+	for i, param := range self.params {
+		if !param.Type.Equals(fn.params[i].Type) {
+			return false
+		}
+	}
+
+	return true
 }

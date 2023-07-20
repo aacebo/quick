@@ -14,6 +14,10 @@ func (self NilType) String() string {
 	return Nil.String()
 }
 
+func (self NilType) Len() int {
+	panic("method not supported")
+}
+
 func (self NilType) Comparable() bool {
 	return true
 }
@@ -26,6 +30,6 @@ func (self NilType) Collection() bool {
 	return false
 }
 
-func (self NilType) Len() int {
-	panic("method not supported")
+func (self NilType) Equals(t Type) bool {
+	return t.Kind() == Nil
 }

@@ -20,3 +20,17 @@ func (self Value) IsSlice() bool {
 func (self Value) Slice() []Value {
 	return self._value.([]Value)
 }
+
+func (self Value) At(i int) Value {
+	return self.Slice()[i]
+}
+
+func (self Value) SubSlice(i int, j int) []Value {
+	return self.Slice()[i:j]
+}
+
+func (self *Value) Push(value Value) {
+	v := self.Slice()
+	v = append(v, value)
+	self._value = v
+}

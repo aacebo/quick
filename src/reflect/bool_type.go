@@ -14,6 +14,10 @@ func (self BoolType) String() string {
 	return Bool.String()
 }
 
+func (self BoolType) Len() int {
+	panic("method not supported")
+}
+
 func (self BoolType) Comparable() bool {
 	return true
 }
@@ -26,6 +30,6 @@ func (self BoolType) Collection() bool {
 	return false
 }
 
-func (self BoolType) Len() int {
-	panic("method not supported")
+func (self BoolType) Equals(t Type) bool {
+	return t.Kind() == Bool
 }

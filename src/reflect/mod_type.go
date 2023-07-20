@@ -16,6 +16,10 @@ func (self ModType) String() string {
 	return Mod.String()
 }
 
+func (self ModType) Len() int {
+	return len(self.exports)
+}
+
 func (self ModType) Comparable() bool {
 	return false
 }
@@ -28,6 +32,20 @@ func (self ModType) Collection() bool {
 	return true
 }
 
-func (self ModType) Len() int {
-	return len(self.exports)
+func (self ModType) Equals(t Type) bool {
+	if t.Kind() != Mod {
+		return false
+	}
+
+	mod := t.(ModType)
+
+	for key, _type := range self.exports {
+		et, ok := mod.exports[key]
+
+		if !ok || !_type.Equals(et) {
+			return false
+		}
+	}
+
+	return true
 }

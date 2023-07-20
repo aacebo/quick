@@ -22,6 +22,10 @@ func (self SliceType) String() string {
 	)
 }
 
+func (self SliceType) Len() int {
+	return self.length
+}
+
 func (self SliceType) Comparable() bool {
 	return false
 }
@@ -38,6 +42,14 @@ func (self SliceType) Type() Type {
 	return self._type
 }
 
-func (self SliceType) Len() int {
-	return self.length
+func (self SliceType) Equals(t Type) bool {
+	if t.Kind() != Slice {
+		return false
+	}
+
+	if !self._type.Equals(t) {
+		return false
+	}
+
+	return true
 }
