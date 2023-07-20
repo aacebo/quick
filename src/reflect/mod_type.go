@@ -49,3 +49,12 @@ func (self ModType) Equals(t Type) bool {
 
 	return true
 }
+
+func (self ModType) HasExport(name string) bool {
+	_, ok := self.exports[name]
+	return ok
+}
+
+func (self ModType) GetExport(name string) Type {
+	return self.exports[name]
+}
