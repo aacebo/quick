@@ -23,7 +23,7 @@ func (self IntType) Comparable() bool {
 }
 
 func (self IntType) Numeric() bool {
-	return false
+	return true
 }
 
 func (self IntType) Collection() bool {
