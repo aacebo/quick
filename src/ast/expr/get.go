@@ -2,8 +2,8 @@ package expr
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Get struct {
@@ -18,10 +18,10 @@ func NewGet(object Expr, name *token.Token) *Get {
 	}
 }
 
-func (self *Get) CheckValue() (value.Value, *error.Error) {
-	return self.Object.CheckValue()
+func (self *Get) GetType() (reflect.Type, *error.Error) {
+	return self.Object.GetType()
 }
 
-func (self *Get) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Get) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitGetExpr(self)
 }

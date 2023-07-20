@@ -1,8 +1,10 @@
 package reflect
 
-func NewInt(value int) Value {
-	return Value{
-		_type:  IntType{},
+import "strconv"
+
+func NewInt(value int) *Value {
+	return &Value{
+		_type:  NewIntType(),
 		_value: value,
 	}
 }
@@ -21,4 +23,8 @@ func (self Value) Int() int {
 
 func (self *Value) SetInt(value int) {
 	self._value = value
+}
+
+func (self Value) IntString() string {
+	return strconv.Itoa(self.Int())
 }

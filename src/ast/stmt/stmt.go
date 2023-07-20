@@ -2,9 +2,9 @@ package stmt
 
 import (
 	"quick/src/error"
-	"quick/src/value"
+	"quick/src/reflect"
 )
 
 type Stmt interface {
-	Accept(Visitor) (value.Value, *error.Error)
+	Accept(Visitor) (*reflect.Value, *error.Error)
 }

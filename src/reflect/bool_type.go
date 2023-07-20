@@ -2,6 +2,10 @@ package reflect
 
 type BoolType struct{}
 
+func NewBoolType() BoolType {
+	return BoolType{}
+}
+
 func (self BoolType) Kind() Kind {
 	return Bool
 }

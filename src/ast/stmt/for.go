@@ -3,7 +3,7 @@ package stmt
 import (
 	"quick/src/ast/expr"
 	"quick/src/error"
-	"quick/src/value"
+	"quick/src/reflect"
 )
 
 type For struct {
@@ -22,6 +22,6 @@ func NewFor(init Stmt, cond expr.Expr, inc expr.Expr, body Stmt) *For {
 	}
 }
 
-func (self *For) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *For) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitForStmt(self)
 }

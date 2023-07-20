@@ -2,6 +2,10 @@ package reflect
 
 type ByteType struct{}
 
+func NewByteType() ByteType {
+	return ByteType{}
+}
+
 func (self ByteType) Kind() Kind {
 	return Byte
 }

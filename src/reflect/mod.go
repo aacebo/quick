@@ -1,11 +1,9 @@
 package reflect
 
-func NewMod() Value {
-	return Value{
-		_type: ModType{
-			exports: map[string]Type{},
-		},
-		_value: map[string]Value{},
+func NewMod() *Value {
+	return &Value{
+		_type:  NewModType(),
+		_value: map[string]*Value{},
 	}
 }
 
@@ -17,8 +15,8 @@ func (self Value) IsMod() bool {
 	return self.Kind() == Mod
 }
 
-func (self Value) Mod() map[string]Value {
-	return self._value.(map[string]Value)
+func (self Value) Mod() map[string]*Value {
+	return self._value.(map[string]*Value)
 }
 
 func (self Value) HasExport(name string) bool {
@@ -26,15 +24,15 @@ func (self Value) HasExport(name string) bool {
 	return ok
 }
 
-func (self Value) GetExport(name string) Value {
+func (self Value) GetExport(name string) *Value {
 	return self.Mod()[name]
 }
 
-func (self *Value) SetExport(name string, value Value) {
+func (self *Value) SetExport(name string, value *Value) {
 	mod := self.Mod()
 	v, ok := mod[name]
 
-	if !ok || !v._type.Equals(value._type) {
+	if ok && !v._type.Equals(value._type) {
 		panic("invalid type")
 	}
 
@@ -46,4 +44,8 @@ func (self *Value) DelExport(name string) {
 	v := self.Mod()
 	delete(v, name)
 	self._value = v
+}
+
+func (self Value) ModString() string {
+	return self.ModType().String()
 }

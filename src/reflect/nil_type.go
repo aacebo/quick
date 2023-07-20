@@ -2,6 +2,10 @@ package reflect
 
 type NilType struct{}
 
+func NewNilType() NilType {
+	return NilType{}
+}
+
 func (self NilType) Kind() Kind {
 	return Nil
 }

@@ -2,23 +2,23 @@ package expr
 
 import (
 	"quick/src/error"
-	"quick/src/value"
+	"quick/src/reflect"
 )
 
 type Literal struct {
-	Value value.Value
+	Value *reflect.Value
 }
 
-func NewLiteral(value value.Value) *Literal {
+func NewLiteral(value *reflect.Value) *Literal {
 	return &Literal{
 		Value: value,
 	}
 }
 
-func (self *Literal) CheckValue() (value.Value, *error.Error) {
-	return self.Value, nil
+func (self *Literal) GetType() (reflect.Type, *error.Error) {
+	return self.Value.Type(), nil
 }
 
-func (self *Literal) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Literal) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitLiteralExpr(self)
 }

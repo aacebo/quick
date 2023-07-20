@@ -1,8 +1,8 @@
 package reflect
 
-func NewBool(value bool) Value {
-	return Value{
-		_type:  BoolType{},
+func NewBool(value bool) *Value {
+	return &Value{
+		_type:  NewBoolType(),
 		_value: value,
 	}
 }
@@ -21,4 +21,12 @@ func (self Value) Bool() bool {
 
 func (self *Value) SetBool(value bool) {
 	self._value = value
+}
+
+func (self Value) BoolString() string {
+	if self.Bool() {
+		return "true"
+	}
+
+	return "false"
 }

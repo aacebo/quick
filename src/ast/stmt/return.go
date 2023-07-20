@@ -3,8 +3,8 @@ package stmt
 import (
 	"quick/src/ast/expr"
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Return struct {
@@ -19,6 +19,6 @@ func NewReturn(keyword *token.Token, value expr.Expr) *Return {
 	}
 }
 
-func (self *Return) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Return) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitReturnStmt(self)
 }

@@ -1,19 +1,17 @@
 package reflect
 
-import "quick/src/ast/stmt"
-
 func NewFn(
 	name string,
 	params []Param,
 	returnType Type,
-	value *stmt.Fn,
-) Value {
-	return Value{
-		_type: FnType{
-			name:       name,
-			params:     params,
-			returnType: returnType,
-		},
+	value any,
+) *Value {
+	return &Value{
+		_type: NewFnType(
+			name,
+			params,
+			returnType,
+		),
 		_value: value,
 	}
 }
@@ -26,6 +24,10 @@ func (self Value) IsFn() bool {
 	return self.Kind() == Fn
 }
 
-func (self Value) Fn() *stmt.Fn {
-	return self._value.(*stmt.Fn)
+func (self Value) Fn() any {
+	return self._value
+}
+
+func (self Value) FnString() string {
+	return self.FnType().String()
 }

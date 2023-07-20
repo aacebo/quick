@@ -4,7 +4,35 @@ func (self Value) Comparable() bool {
 	return self._type.Comparable()
 }
 
-func (self Value) Eq(o Value) bool {
+func (self Value) Truthy() bool {
+	if self.IsNil() {
+		return false
+	}
+
+	if self.IsBool() {
+		return self.Bool()
+	}
+
+	if self.IsByte() {
+		return self.Byte() > 0
+	}
+
+	if self.IsInt() {
+		return self.Int() > 0
+	}
+
+	if self.IsFloat() {
+		return self.Float() > 0
+	}
+
+	if self.IsString() {
+		return self.Len() > 0
+	}
+
+	panic("method not supported")
+}
+
+func (self Value) Eq(o *Value) bool {
 	if self.IsNil() && o.IsNil() {
 		return true
 	}
@@ -32,7 +60,7 @@ func (self Value) Eq(o Value) bool {
 	panic("method not supported")
 }
 
-func (self Value) Gt(o Value) bool {
+func (self Value) Gt(o *Value) bool {
 	if self.IsByte() {
 		return self.Byte() > o.Byte()
 	}
@@ -52,7 +80,7 @@ func (self Value) Gt(o Value) bool {
 	panic("method not supported")
 }
 
-func (self Value) GtEq(o Value) bool {
+func (self Value) GtEq(o *Value) bool {
 	if self.IsByte() {
 		return self.Byte() >= o.Byte()
 	}
@@ -72,7 +100,7 @@ func (self Value) GtEq(o Value) bool {
 	panic("method not supported")
 }
 
-func (self Value) Lt(o Value) bool {
+func (self Value) Lt(o *Value) bool {
 	if self.IsByte() {
 		return self.Byte() < o.Byte()
 	}
@@ -92,7 +120,7 @@ func (self Value) Lt(o Value) bool {
 	panic("method not supported")
 }
 
-func (self Value) LtEq(o Value) bool {
+func (self Value) LtEq(o *Value) bool {
 	if self.IsByte() {
 		return self.Byte() <= o.Byte()
 	}

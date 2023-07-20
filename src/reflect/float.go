@@ -1,8 +1,10 @@
 package reflect
 
-func NewFloat(value float64) Value {
-	return Value{
-		_type:  FloatType{},
+import "fmt"
+
+func NewFloat(value float64) *Value {
+	return &Value{
+		_type:  NewFloatType(),
 		_value: value,
 	}
 }
@@ -21,4 +23,8 @@ func (self Value) Float() float64 {
 
 func (self *Value) SetFloat(value float64) {
 	self._value = value
+}
+
+func (self Value) FloatString() string {
+	return fmt.Sprintf("%f", self.Float())
 }

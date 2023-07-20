@@ -2,8 +2,8 @@ package expr
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Call struct {
@@ -20,10 +20,10 @@ func NewCall(callee Expr, paren *token.Token, args []Expr) *Call {
 	}
 }
 
-func (self *Call) CheckValue() (value.Value, *error.Error) {
-	return self.Callee.CheckValue()
+func (self *Call) GetType() (reflect.Type, *error.Error) {
+	return self.Callee.GetType()
 }
 
-func (self *Call) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Call) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitCallExpr(self)
 }

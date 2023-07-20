@@ -1,23 +1,25 @@
 package interpreter
 
-import "quick/src/value"
+import (
+	"quick/src/reflect"
+)
 
 type Scope struct {
 	parent *Scope
-	values map[string]value.Value
+	values map[string]*reflect.Value
 }
 
 func NewScope() *Scope {
 	return &Scope{
 		parent: nil,
-		values: map[string]value.Value{},
+		values: map[string]*reflect.Value{},
 	}
 }
 
 func NewChildScope(parent *Scope) *Scope {
 	return &Scope{
 		parent: parent,
-		values: map[string]value.Value{},
+		values: map[string]*reflect.Value{},
 	}
 }
 
@@ -38,11 +40,11 @@ func (self Scope) Has(key string) bool {
 	return false
 }
 
-func (self Scope) GetLocal(key string) value.Value {
+func (self Scope) GetLocal(key string) *reflect.Value {
 	return self.values[key]
 }
 
-func (self Scope) Get(key string) value.Value {
+func (self Scope) Get(key string) *reflect.Value {
 	if self.HasLocal(key) {
 		return self.GetLocal(key)
 	}
@@ -54,6 +56,6 @@ func (self Scope) Get(key string) value.Value {
 	return nil
 }
 
-func (self *Scope) Set(key string, value value.Value) {
+func (self *Scope) Set(key string, value *reflect.Value) {
 	self.values[key] = value
 }

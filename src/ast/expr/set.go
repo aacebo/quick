@@ -2,8 +2,8 @@ package expr
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Set struct {
@@ -20,32 +20,32 @@ func NewSet(object Expr, name *token.Token, value Expr) *Set {
 	}
 }
 
-func (self *Set) CheckValue() (value.Value, *error.Error) {
-	object, err := self.Object.CheckValue()
+func (self *Set) GetType() (reflect.Type, *error.Error) {
+	object, err := self.Object.GetType()
 
 	if err != nil {
 		return nil, err
 	}
 
-	value, err := self.Value.CheckValue()
+	value, err := self.Value.GetType()
 
 	if err != nil {
 		return nil, err
 	}
 
-	if !object.TypeEq(value) {
+	if !object.Equals(value) {
 		return nil, error.New(
 			self.Name.Path,
 			self.Name.Ln,
 			self.Name.Start,
 			self.Name.End,
-			"type '"+object.Name()+"' is not '"+value.Name()+"'",
+			"expected type '"+object.Name()+"', received '"+value.Name()+"'",
 		)
 	}
 
 	return object, nil
 }
 
-func (self *Set) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Set) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitSetExpr(self)
 }

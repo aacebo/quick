@@ -2,8 +2,8 @@ package expr
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Logical struct {
@@ -20,32 +20,32 @@ func NewLogical(left Expr, op *token.Token, right Expr) *Logical {
 	}
 }
 
-func (self *Logical) CheckValue() (value.Value, *error.Error) {
-	left, err := self.Left.CheckValue()
+func (self *Logical) GetType() (reflect.Type, *error.Error) {
+	left, err := self.Left.GetType()
 
 	if err != nil {
 		return nil, err
 	}
 
-	right, err := self.Right.CheckValue()
+	right, err := self.Right.GetType()
 
 	if err != nil {
 		return nil, err
 	}
 
-	if !left.TypeEq(right) {
+	if !left.Equals(right) {
 		return nil, error.New(
 			self.Op.Path,
 			self.Op.Ln,
 			self.Op.Start,
 			self.Op.End,
-			"type '"+left.Name()+"' is not '"+right.Name()+"'",
+			"expected type '"+left.Name()+"', received '"+right.Name()+"'",
 		)
 	}
 
 	return left, nil
 }
 
-func (self *Logical) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Logical) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitLogicalExpr(self)
 }

@@ -2,6 +2,10 @@ package reflect
 
 type FloatType struct{}
 
+func NewFloatType() FloatType {
+	return FloatType{}
+}
+
 func (self FloatType) Kind() Kind {
 	return Float
 }

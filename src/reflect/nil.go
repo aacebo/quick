@@ -1,8 +1,8 @@
 package reflect
 
-func NewNil() Value {
-	return Value{
-		_type:  NilType{},
+func NewNil() *Value {
+	return &Value{
+		_type:  NewNilType(),
 		_value: nil,
 	}
 }
@@ -17,4 +17,8 @@ func (self Value) IsNil() bool {
 
 func (self *Value) SetNil() {
 	self._value = nil
+}
+
+func (self Value) NilString() string {
+	return "<nil>"
 }

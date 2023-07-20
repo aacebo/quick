@@ -2,26 +2,26 @@ package expr
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Self struct {
 	Keyword *token.Token
-	Value   value.Value
+	Type    reflect.Type
 }
 
-func NewSelf(keyword *token.Token, value value.Value) *Self {
+func NewSelf(keyword *token.Token, _type reflect.Type) *Self {
 	return &Self{
 		Keyword: keyword,
-		Value:   value,
+		Type:    _type,
 	}
 }
 
-func (self *Self) CheckValue() (value.Value, *error.Error) {
-	return self.Value, nil
+func (self *Self) GetType() (reflect.Type, *error.Error) {
+	return self.Type, nil
 }
 
-func (self *Self) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Self) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitSelfExpr(self)
 }

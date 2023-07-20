@@ -2,6 +2,10 @@ package reflect
 
 type StringType struct{}
 
+func NewStringType() StringType {
+	return StringType{}
+}
+
 func (self StringType) Kind() Kind {
 	return String
 }

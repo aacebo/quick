@@ -2,6 +2,10 @@ package reflect
 
 type IntType struct{}
 
+func NewIntType() IntType {
+	return IntType{}
+}
+
 func (self IntType) Kind() Kind {
 	return Int
 }

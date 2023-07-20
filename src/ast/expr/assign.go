@@ -2,8 +2,8 @@ package expr
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Assign struct {
@@ -18,10 +18,10 @@ func NewAssign(name *token.Token, value Expr) *Assign {
 	}
 }
 
-func (self *Assign) CheckValue() (value.Value, *error.Error) {
-	return self.Value.CheckValue()
+func (self *Assign) GetType() (reflect.Type, *error.Error) {
+	return self.Value.GetType()
 }
 
-func (self *Assign) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Assign) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitAssignExpr(self)
 }

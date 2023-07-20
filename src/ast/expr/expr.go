@@ -2,10 +2,10 @@ package expr
 
 import (
 	"quick/src/error"
-	"quick/src/value"
+	"quick/src/reflect"
 )
 
 type Expr interface {
-	CheckValue() (value.Value, *error.Error)
-	Accept(Visitor) (value.Value, *error.Error)
+	GetType() (reflect.Type, *error.Error)
+	Accept(Visitor) (*reflect.Value, *error.Error)
 }

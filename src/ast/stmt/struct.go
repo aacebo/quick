@@ -2,8 +2,8 @@ package stmt
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Struct struct {
@@ -18,6 +18,6 @@ func NewStruct(name *token.Token, methods []*Fn) *Struct {
 	}
 }
 
-func (self *Struct) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Struct) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitStructStmt(self)
 }

@@ -2,26 +2,26 @@ package expr
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Var struct {
-	Name  *token.Token
-	Value value.Value
+	Name *token.Token
+	Type reflect.Type
 }
 
-func NewVar(name *token.Token, value value.Value) *Var {
+func NewVar(name *token.Token, _type reflect.Type) *Var {
 	return &Var{
-		Name:  name,
-		Value: value,
+		Name: name,
+		Type: _type,
 	}
 }
 
-func (self *Var) CheckValue() (value.Value, *error.Error) {
-	return self.Value, nil
+func (self *Var) GetType() (reflect.Type, *error.Error) {
+	return self.Type, nil
 }
 
-func (self *Var) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Var) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitVarExpr(self)
 }

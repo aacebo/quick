@@ -3,7 +3,7 @@ package stmt
 import (
 	"quick/src/ast/expr"
 	"quick/src/error"
-	"quick/src/value"
+	"quick/src/reflect"
 )
 
 type Expr struct {
@@ -16,6 +16,6 @@ func NewExpr(expr expr.Expr) *Expr {
 	}
 }
 
-func (self *Expr) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Expr) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitExprStmt(self)
 }

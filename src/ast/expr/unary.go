@@ -2,8 +2,8 @@ package expr
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Unary struct {
@@ -18,10 +18,10 @@ func NewUnary(op *token.Token, right Expr) *Unary {
 	}
 }
 
-func (self *Unary) CheckValue() (value.Value, *error.Error) {
-	return self.Right.CheckValue()
+func (self *Unary) GetType() (reflect.Type, *error.Error) {
+	return self.Right.GetType()
 }
 
-func (self *Unary) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Unary) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitUnaryExpr(self)
 }

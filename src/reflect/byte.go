@@ -1,8 +1,8 @@
 package reflect
 
-func NewByte(value byte) Value {
-	return Value{
-		_type:  ByteType{},
+func NewByte(value byte) *Value {
+	return &Value{
+		_type:  NewByteType(),
 		_value: value,
 	}
 }
@@ -21,4 +21,8 @@ func (self Value) Byte() byte {
 
 func (self *Value) SetByte(value byte) {
 	self._value = value
+}
+
+func (self Value) ByteString() string {
+	return string(self.Byte())
 }

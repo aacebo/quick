@@ -1,8 +1,8 @@
 package reflect
 
-func NewString(value string) Value {
-	return Value{
-		_type:  StringType{},
+func NewString(value string) *Value {
+	return &Value{
+		_type:  NewStringType(),
 		_value: value,
 	}
 }

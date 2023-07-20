@@ -7,12 +7,19 @@ type SliceType struct {
 	length int
 }
 
+func NewSliceType(_type Type, length int) SliceType {
+	return SliceType{
+		_type:  _type,
+		length: length,
+	}
+}
+
 func (self SliceType) Kind() Kind {
 	return Slice
 }
 
 func (self SliceType) Name() string {
-	return Slice.String()
+	return "[]" + self._type.Name()
 }
 
 func (self SliceType) String() string {
@@ -47,7 +54,7 @@ func (self SliceType) Equals(t Type) bool {
 		return false
 	}
 
-	if !self._type.Equals(t) {
+	if !self._type.Equals(t.(SliceType)._type) {
 		return false
 	}
 

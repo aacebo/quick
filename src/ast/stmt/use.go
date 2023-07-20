@@ -2,8 +2,8 @@ package stmt
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Use struct {
@@ -18,6 +18,6 @@ func NewUse(path []*token.Token, stmts []Stmt) *Use {
 	}
 }
 
-func (self *Use) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Use) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitUseStmt(self)
 }

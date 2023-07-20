@@ -1,23 +1,23 @@
 package parser
 
 import (
-	"quick/src/value"
+	"quick/src/reflect"
 )
 
 type Scope struct {
 	parent *Scope
-	values map[string]value.Value
+	types  map[string]reflect.Type
 }
 
 func NewScope() *Scope {
 	return &Scope{
 		parent: nil,
-		values: map[string]value.Value{
-			"byte":   value.Byte(0),
-			"bool":   value.Bool(true),
-			"int":    value.Int(0),
-			"float":  value.Float(0),
-			"string": value.String(""),
+		types: map[string]reflect.Type{
+			"byte":   reflect.NewByteType(),
+			"bool":   reflect.NewBoolType(),
+			"int":    reflect.NewIntType(),
+			"float":  reflect.NewFloatType(),
+			"string": reflect.NewStringType(),
 		},
 	}
 }
@@ -25,12 +25,12 @@ func NewScope() *Scope {
 func NewChildScope(parent *Scope) *Scope {
 	return &Scope{
 		parent: parent,
-		values: map[string]value.Value{},
+		types:  map[string]reflect.Type{},
 	}
 }
 
 func (self Scope) HasLocal(key string) bool {
-	_, ok := self.values[key]
+	_, ok := self.types[key]
 	return ok
 }
 
@@ -46,11 +46,11 @@ func (self Scope) Has(key string) bool {
 	return false
 }
 
-func (self Scope) GetLocal(key string) value.Value {
-	return self.values[key]
+func (self Scope) GetLocal(key string) reflect.Type {
+	return self.types[key]
 }
 
-func (self Scope) Get(key string) value.Value {
+func (self Scope) Get(key string) reflect.Type {
 	if self.HasLocal(key) {
 		return self.GetLocal(key)
 	}
@@ -62,6 +62,6 @@ func (self Scope) Get(key string) value.Value {
 	return nil
 }
 
-func (self *Scope) Set(key string, value value.Value) {
-	self.values[key] = value
+func (self *Scope) Set(key string, _type reflect.Type) {
+	self.types[key] = _type
 }

@@ -2,7 +2,7 @@ package stmt
 
 import (
 	"quick/src/error"
-	"quick/src/value"
+	"quick/src/reflect"
 )
 
 type Block struct {
@@ -15,6 +15,6 @@ func NewBlock(stmts []Stmt) *Block {
 	}
 }
 
-func (self *Block) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Block) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitBlockStmt(self)
 }

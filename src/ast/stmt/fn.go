@@ -2,21 +2,21 @@ package stmt
 
 import (
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Fn struct {
 	Name       *token.Token
 	Params     []*Var
-	ReturnType value.Value
+	ReturnType reflect.Type
 	Body       []Stmt
 }
 
 func NewFn(
 	name *token.Token,
 	params []*Var,
-	returnType value.Value,
+	returnType reflect.Type,
 	body []Stmt,
 ) *Fn {
 	return &Fn{
@@ -27,6 +27,6 @@ func NewFn(
 	}
 }
 
-func (self *Fn) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Fn) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitFnStmt(self)
 }

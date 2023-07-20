@@ -3,14 +3,14 @@ package stmt
 import (
 	"quick/src/ast/expr"
 	"quick/src/error"
+	"quick/src/reflect"
 	"quick/src/token"
-	"quick/src/value"
 )
 
 type Var struct {
 	Keyword *token.Token
 	Name    *token.Token
-	Type    value.Value
+	Type    reflect.Type
 	Nilable *token.Token
 	Init    expr.Expr
 }
@@ -18,7 +18,7 @@ type Var struct {
 func NewVar(
 	keyword *token.Token,
 	name *token.Token,
-	_type value.Value,
+	_type reflect.Type,
 	nilable *token.Token,
 	init expr.Expr,
 ) *Var {
@@ -31,6 +31,6 @@ func NewVar(
 	}
 }
 
-func (self *Var) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *Var) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitVarStmt(self)
 }

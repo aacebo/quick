@@ -13,6 +13,14 @@ type FnType struct {
 	returnType Type
 }
 
+func NewFnType(name string, params []Param, returnType Type) FnType {
+	return FnType{
+		name:       name,
+		params:     params,
+		returnType: returnType,
+	}
+}
+
 func (self FnType) Kind() Kind {
 	return Fn
 }

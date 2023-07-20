@@ -3,7 +3,7 @@ package stmt
 import (
 	"quick/src/ast/expr"
 	"quick/src/error"
-	"quick/src/value"
+	"quick/src/reflect"
 )
 
 type If struct {
@@ -20,6 +20,6 @@ func NewIf(cond expr.Expr, then Stmt, _else Stmt) *If {
 	}
 }
 
-func (self *If) Accept(v Visitor) (value.Value, *error.Error) {
+func (self *If) Accept(v Visitor) (*reflect.Value, *error.Error) {
 	return v.VisitIfStmt(self)
 }

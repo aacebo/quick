@@ -4,6 +4,12 @@ type ModType struct {
 	exports map[string]Type
 }
 
+func NewModType() ModType {
+	return ModType{
+		exports: map[string]Type{},
+	}
+}
+
 func (self ModType) Kind() Kind {
 	return Mod
 }
@@ -13,7 +19,7 @@ func (self ModType) Name() string {
 }
 
 func (self ModType) String() string {
-	return Mod.String()
+	return "<mod>"
 }
 
 func (self ModType) Len() int {
@@ -57,4 +63,8 @@ func (self ModType) HasExport(name string) bool {
 
 func (self ModType) GetExport(name string) Type {
 	return self.exports[name]
+}
+
+func (self *ModType) SetExport(name string, _type Type) {
+	self.exports[name] = _type
 }
