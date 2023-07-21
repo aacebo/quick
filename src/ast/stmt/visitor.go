@@ -11,7 +11,6 @@ type Visitor interface {
 	VisitForStmt(*For) (*reflect.Value, *error.Error)
 	VisitFnStmt(*Fn) (*reflect.Value, *error.Error)
 	VisitIfStmt(*If) (*reflect.Value, *error.Error)
-	VisitPrintStmt(*Print) (*reflect.Value, *error.Error)
 	VisitReturnStmt(*Return) (*reflect.Value, *error.Error)
 	VisitStructStmt(*Struct) (*reflect.Value, *error.Error)
 	VisitVarStmt(*Var) (*reflect.Value, *error.Error)

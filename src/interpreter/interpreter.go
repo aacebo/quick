@@ -164,17 +164,6 @@ func (self *Interpreter) VisitIfStmt(s *stmt.If) (*reflect.Value, *error.Error) 
 	return nil, nil
 }
 
-func (self *Interpreter) VisitPrintStmt(s *stmt.Print) (*reflect.Value, *error.Error) {
-	v, err := self.Eval(s.Expr)
-
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Print(v.ToString())
-	return nil, nil
-}
-
 func (self *Interpreter) VisitReturnStmt(s *stmt.Return) (*reflect.Value, *error.Error) {
 	var value *reflect.Value = nil
 

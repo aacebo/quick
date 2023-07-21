@@ -40,7 +40,7 @@ func main() {
 		}
 
 		if value != nil {
-			log.Println(value.String())
+			log.Println(value.ToString())
 		}
 	}
 }

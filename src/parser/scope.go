@@ -18,6 +18,11 @@ func NewScope() *Scope {
 			"int":    reflect.NewIntType(),
 			"float":  reflect.NewFloatType(),
 			"string": reflect.NewStringType(),
+			"print": reflect.NewNativeFnType(
+				"print",
+				[]reflect.Param{{Name: "value", Type: reflect.NewStringType()}},
+				reflect.NewNilType(),
+			),
 		},
 	}
 }

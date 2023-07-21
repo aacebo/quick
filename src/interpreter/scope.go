@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"fmt"
 	"quick/src/reflect"
 )
 
@@ -12,7 +13,17 @@ type Scope struct {
 func NewScope() *Scope {
 	return &Scope{
 		parent: nil,
-		values: map[string]*reflect.Value{},
+		values: map[string]*reflect.Value{
+			"print": reflect.NewNativeFn(
+				"print",
+				[]reflect.Param{{Name: "value", Type: reflect.NewStringType()}},
+				reflect.NewNilType(),
+				func(args []*reflect.Value) *reflect.Value {
+					fmt.Print(args[0].String())
+					return reflect.NewNil()
+				},
+			),
+		},
 	}
 }
 

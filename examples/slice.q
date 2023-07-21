@@ -1,4 +1,4 @@
 let col []string = ["hello ", "world"];
 
-print col;
-print "\n";
+print(col.to_string());
+print("\n");

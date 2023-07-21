@@ -77,8 +77,6 @@ func (self *Parser) statement() (stmt.Stmt, *error.Error) {
 		return self._for()
 	} else if self.match(token.IF) {
 		return self._if()
-	} else if self.match(token.PRINT) {
-		return self._print()
 	} else if self.match(token.RETURN) {
 		return self._return()
 	} else if self.match(token.LEFT_BRACE) {
@@ -133,22 +131,6 @@ func (self *Parser) _if() (stmt.Stmt, *error.Error) {
 	}
 
 	return stmt.NewIf(cond, then, _else), nil
-}
-
-func (self *Parser) _print() (stmt.Stmt, *error.Error) {
-	value, err := self.expression()
-
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = self.consume(token.SEMI_COLON, "expected ';'")
-
-	if err != nil {
-		return nil, err
-	}
-
-	return stmt.NewPrint(value), nil
 }
 
 func (self *Parser) _return() (stmt.Stmt, *error.Error) {
@@ -1116,7 +1098,6 @@ func (self *Parser) sync() {
 		case token.CONST:
 		case token.FOR:
 		case token.IF:
-		case token.PRINT:
 		case token.RETURN:
 			return
 		default:

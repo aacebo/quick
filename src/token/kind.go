@@ -66,7 +66,6 @@ const (
 	USE
 	TRUE
 	FALSE
-	PRINT
 
 	// types
 	TYPE
@@ -98,7 +97,6 @@ var Keywords = map[string]Kind{
 	"float":  TYPE,
 	"bool":   TYPE,
 	"map":    TYPE,
-	"print":  PRINT,
 }
 
 var Types = map[string]Kind{
