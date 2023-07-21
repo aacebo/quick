@@ -656,11 +656,37 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 		return nil, err
 	}
 
+	varType, err := e.GetType()
+
+	if err != nil {
+		return nil, err
+	}
+
 	if self.match(token.EQ) {
 		value, err := self.assignment()
 
 		if err != nil {
 			return nil, err
+		}
+
+		assignType, err := value.GetType()
+
+		if err != nil {
+			return nil, err
+		}
+
+		if call, ok := value.(*expr.Call); ok {
+			if get, ok := call.Callee.(*expr.Get); ok {
+				assignType = assignType.GetMember(get.Name.String())
+
+				if callable, ok := assignType.(reflect.CallableType); ok {
+					assignType = callable.ReturnType()
+				}
+			}
+		}
+
+		if !varType.Equals(assignType) {
+			return nil, self.error("expected type '" + varType.Name() + "', received '" + assignType.Name() + "'")
 		}
 
 		switch e.(type) {
@@ -671,12 +697,6 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 				return nil, self.error("undefined identifier")
 			}
 
-			_, err = _var.GetType()
-
-			if err != nil {
-				return nil, err
-			}
-
 			return expr.NewAssign(_var.Name, value), nil
 		case *expr.Get:
 			get := e.(*expr.Get)
@@ -685,22 +705,10 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 				return nil, self.error("undefined identifier")
 			}
 
-			_, err = get.GetType()
-
-			if err != nil {
-				return nil, err
-			}
-
-			return expr.NewGet(get.Object, get.Name), nil
+			return expr.NewSet(get.Object, get.Name, value), nil
 		}
 
 		return nil, self.error("invalid assignment target")
-	}
-
-	_, err = e.GetType()
-
-	if err != nil {
-		return nil, err
 	}
 
 	return e, nil
@@ -888,19 +896,19 @@ func (self *Parser) call() (expr.Expr, *error.Error) {
 				i := 0
 
 				for {
-					e, err := self.expression()
+					arg, err := self.expression()
 
 					if err != nil {
 						return nil, err
 					}
 
-					args = append(args, e)
+					args = append(args, arg)
 
 					if i > len(fn.Params())-1 {
 						return nil, self.error("too many arguments")
 					}
 
-					t, err := e.GetType()
+					t, err := arg.GetType()
 
 					if err != nil {
 						return nil, err

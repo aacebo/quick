@@ -30,6 +30,8 @@ func main() {
 		stmts = append(stmts, _stmts)
 	}
 
+	log.Println("compiled successfully")
+
 	for _, _stmts := range stmts {
 		value, err := interpreter.New().Interpret(_stmts)
 

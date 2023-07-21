@@ -20,6 +20,7 @@ type ComparableType interface {
 
 type CallableType interface {
 	Params() []Param
+	ReturnType() Type
 
 	Type
 }

@@ -1,8 +1,9 @@
 package reflect
 
 type Value struct {
-	_type  Type
-	_value any
+	_type    Type
+	_value   any
+	_members map[string]*Value
 }
 
 func (self Value) Type() Type {
@@ -42,6 +43,10 @@ func (self Value) ToString() string {
 		return self.FnString()
 	}
 
+	if self.IsNativeFn() {
+		return self.NativeFnString()
+	}
+
 	if self.IsMap() {
 		return self.MapString()
 	}
@@ -58,43 +63,24 @@ func (self Value) ToString() string {
 }
 
 func (self Value) HasMember(name string) bool {
-	if self.IsMod() {
-		return self.ModHasMember(name)
-	}
-
-	if self.IsString() {
-		return self.StringHasMember(name)
-	}
-
-	panic("method not supported for type '" + self.Type().Name() + "'")
+	_, ok := self._members[name]
+	return ok
 }
 
 func (self *Value) GetMember(name string) *Value {
-	if self.IsMod() {
-		return self.ModGetMember(name)
-	}
-
-	if self.IsString() {
-		return self.StringGetMember(name)
-	}
-
-	panic("method not supported for type '" + self.Type().Name() + "'")
+	return self._members[name]
 }
 
 func (self *Value) SetMember(name string, value *Value) {
-	if self.IsMod() {
-		self.ModSetMember(name, value)
-		return
+	v, ok := self._members[name]
+
+	if ok && !v._type.Equals(value._type) {
+		panic("invalid type")
 	}
 
-	panic("method not supported for type '" + self.Type().Name() + "'")
+	self._members[name] = value
 }
 
 func (self *Value) DelMember(name string) {
-	if self.IsMod() {
-		self.ModDelMember(name)
-		return
-	}
-
-	panic("method not supported for type '" + self.Type().Name() + "'")
+	delete(self._members, name)
 }

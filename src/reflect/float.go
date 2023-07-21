@@ -4,8 +4,9 @@ import "fmt"
 
 func NewFloat(value float64) *Value {
 	return &Value{
-		_type:  NewFloatType(),
-		_value: value,
+		_type:    NewFloatType(),
+		_value:   value,
+		_members: map[string]*Value{},
 	}
 }
 

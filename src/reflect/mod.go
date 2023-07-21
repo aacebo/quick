@@ -2,8 +2,9 @@ package reflect
 
 func NewMod() *Value {
 	return &Value{
-		_type:  NewModType(),
-		_value: map[string]*Value{},
+		_type:    NewModType(),
+		_value:   nil,
+		_members: map[string]*Value{},
 	}
 }
 
@@ -16,34 +17,7 @@ func (self Value) IsMod() bool {
 }
 
 func (self Value) Mod() map[string]*Value {
-	return self._value.(map[string]*Value)
-}
-
-func (self Value) ModHasMember(name string) bool {
-	_, ok := self.Mod()[name]
-	return ok
-}
-
-func (self Value) ModGetMember(name string) *Value {
-	return self.Mod()[name]
-}
-
-func (self *Value) ModSetMember(name string, value *Value) {
-	mod := self.Mod()
-	v, ok := mod[name]
-
-	if ok && !v._type.Equals(value._type) {
-		panic("invalid type")
-	}
-
-	mod[name] = value
-	self._value = mod
-}
-
-func (self *Value) ModDelMember(name string) {
-	v := self.Mod()
-	delete(v, name)
-	self._value = v
+	return self._members
 }
 
 func (self Value) ModString() string {
