@@ -10,6 +10,9 @@ func NewString(value string) *Value {
 		"len": NewNativeFn("len", []Param{}, NewIntType(), func(args []*Value) *Value {
 			return NewInt(self.Len())
 		}),
+		"at": NewNativeFn("at", []Param{{Name: "i", Type: NewIntType()}}, NewByteType(), func(args []*Value) *Value {
+			return NewByte(self.String()[args[0].Int()])
+		}),
 	}
 
 	return self

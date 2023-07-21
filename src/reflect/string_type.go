@@ -12,6 +12,11 @@ func NewStringType() StringType {
 				[]Param{},
 				NewIntType(),
 			),
+			"at": NewNativeFnType(
+				"at",
+				[]Param{{Name: "i", Type: NewIntType()}},
+				NewByteType(),
+			),
 		},
 	}
 }
