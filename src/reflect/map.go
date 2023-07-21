@@ -4,9 +4,8 @@ import "fmt"
 
 func NewMap[K ComparableType, V Type](key K, value V) *Value {
 	return &Value{
-		_type:    NewMapType(key, value),
-		_value:   map[any]*Value{},
-		_members: map[string]*Value{},
+		_type:  NewMapType(key, value),
+		_value: map[any]*Value{},
 	}
 }
 

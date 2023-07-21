@@ -2,9 +2,8 @@ package reflect
 
 func NewBool(value bool) *Value {
 	return &Value{
-		_type:    NewBoolType(),
-		_value:   value,
-		_members: map[string]*Value{},
+		_type:  NewBoolType(),
+		_value: value,
 	}
 }
 

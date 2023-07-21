@@ -1,12 +1,12 @@
 package reflect
 
 type ModType struct {
-	members map[string]Type
+	exports map[string]Type
 }
 
 func NewModType() ModType {
 	return ModType{
-		members: map[string]Type{},
+		exports: map[string]Type{},
 	}
 }
 
@@ -23,7 +23,7 @@ func (self ModType) String() string {
 }
 
 func (self ModType) Len() int {
-	return len(self.members)
+	return len(self.exports)
 }
 
 func (self ModType) Comparable() bool {
@@ -45,8 +45,8 @@ func (self ModType) Equals(t Type) bool {
 
 	mod := t.(ModType)
 
-	for key, _type := range self.members {
-		et, ok := mod.members[key]
+	for key, _type := range self.exports {
+		et, ok := mod.exports[key]
 
 		if !ok || !_type.Equals(et) {
 			return false
@@ -57,14 +57,34 @@ func (self ModType) Equals(t Type) bool {
 }
 
 func (self ModType) HasMember(name string) bool {
-	_, ok := self.members[name]
+	_, ok := members[self.Kind()][name]
+
+	if !ok {
+		return self.HasExport(name)
+	}
+
 	return ok
 }
 
 func (self ModType) GetMember(name string) Type {
-	return self.members[name]
+	t, ok := memberTypes[self.Kind()][name]
+
+	if !ok {
+		return self.GetExport(name)
+	}
+
+	return t
 }
 
-func (self *ModType) SetMember(name string, _type Type) {
-	self.members[name] = _type
+func (self ModType) HasExport(name string) bool {
+	_, ok := self.exports[name]
+	return ok
+}
+
+func (self ModType) GetExport(name string) Type {
+	return self.exports[name]
+}
+
+func (self *ModType) SetExport(name string, _type Type) {
+	self.exports[name] = _type
 }

@@ -2,9 +2,8 @@ package reflect
 
 func NewNil() *Value {
 	return &Value{
-		_type:    NewNilType(),
-		_value:   nil,
-		_members: map[string]*Value{},
+		_type:  NewNilType(),
+		_value: nil,
 	}
 }
 

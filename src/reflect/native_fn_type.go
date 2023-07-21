@@ -6,7 +6,6 @@ type NativeFnType struct {
 	name       string
 	params     []Param
 	returnType Type
-	members    map[string]Type
 }
 
 func NewNativeFnType(name string, params []Param, returnType Type) NativeFnType {
@@ -14,7 +13,6 @@ func NewNativeFnType(name string, params []Param, returnType Type) NativeFnType 
 		name:       name,
 		params:     params,
 		returnType: returnType,
-		members:    map[string]Type{},
 	}
 }
 
@@ -79,10 +77,10 @@ func (self NativeFnType) Equals(t Type) bool {
 }
 
 func (self NativeFnType) HasMember(name string) bool {
-	_, ok := self.members[name]
+	_, ok := members[self.Kind()][name]
 	return ok
 }
 
 func (self NativeFnType) GetMember(name string) Type {
-	return self.members[name]
+	return memberTypes[self.Kind()][name]
 }

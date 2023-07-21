@@ -11,7 +11,6 @@ type FnType struct {
 	name       string
 	params     []Param
 	returnType Type
-	members    map[string]Type
 }
 
 func NewFnType(name string, params []Param, returnType Type) FnType {
@@ -19,7 +18,6 @@ func NewFnType(name string, params []Param, returnType Type) FnType {
 		name:       name,
 		params:     params,
 		returnType: returnType,
-		members:    map[string]Type{},
 	}
 }
 
@@ -84,10 +82,10 @@ func (self FnType) Equals(t Type) bool {
 }
 
 func (self FnType) HasMember(name string) bool {
-	_, ok := self.members[name]
+	_, ok := members[self.Kind()][name]
 	return ok
 }
 
 func (self FnType) GetMember(name string) Type {
-	return self.members[name]
+	return memberTypes[self.Kind()][name]
 }

@@ -1,9 +1,8 @@
 package reflect
 
 type Value struct {
-	_type    Type
-	_value   any
-	_members map[string]*Value
+	_type  Type
+	_value any
 }
 
 func (self Value) Type() Type {
@@ -63,24 +62,21 @@ func (self Value) ToString() string {
 }
 
 func (self Value) HasMember(name string) bool {
-	_, ok := self._members[name]
+	_, ok := members[self.Kind()][name]
+
+	if !ok && self.IsMod() {
+		return self.HasExport(name)
+	}
+
 	return ok
 }
 
 func (self *Value) GetMember(name string) *Value {
-	return self._members[name]
-}
+	cb, ok := members[self.Kind()][name]
 
-func (self *Value) SetMember(name string, value *Value) {
-	v, ok := self._members[name]
-
-	if ok && !v._type.Equals(value._type) {
-		panic("invalid type")
+	if !ok && self.IsMod() {
+		return self.GetExport(name)
 	}
 
-	self._members[name] = value
-}
-
-func (self *Value) DelMember(name string) {
-	delete(self._members, name)
+	return cb(self)
 }

@@ -4,9 +4,8 @@ import "strconv"
 
 func NewInt(value int) *Value {
 	return &Value{
-		_type:    NewIntType(),
-		_value:   value,
-		_members: map[string]*Value{},
+		_type:  NewIntType(),
+		_value: value,
 	}
 }
 

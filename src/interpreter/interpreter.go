@@ -227,7 +227,7 @@ func (self *Interpreter) VisitUseStmt(s *stmt.Use) (*reflect.Value, *error.Error
 		}
 	} else {
 		for key, value := range sibling.scope.values {
-			mod.SetMember(key, value)
+			mod.SetExport(key, value)
 		}
 
 		self.scope.Set(s.Path[len(s.Path)-1].String(), mod)

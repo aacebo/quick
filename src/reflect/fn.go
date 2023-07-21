@@ -12,8 +12,7 @@ func NewFn(
 			params,
 			returnType,
 		),
-		_value:   value,
-		_members: map[string]*Value{},
+		_value: value,
 	}
 }
 

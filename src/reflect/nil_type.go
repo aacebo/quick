@@ -1,13 +1,9 @@
 package reflect
 
-type NilType struct {
-	members map[string]Type
-}
+type NilType struct{}
 
 func NewNilType() NilType {
-	return NilType{
-		members: map[string]Type{},
-	}
+	return NilType{}
 }
 
 func (self NilType) Kind() Kind {
@@ -43,10 +39,10 @@ func (self NilType) Equals(t Type) bool {
 }
 
 func (self NilType) HasMember(name string) bool {
-	_, ok := self.members[name]
+	_, ok := members[self.Kind()][name]
 	return ok
 }
 
 func (self NilType) GetMember(name string) Type {
-	return self.members[name]
+	return memberTypes[self.Kind()][name]
 }

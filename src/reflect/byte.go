@@ -2,9 +2,8 @@ package reflect
 
 func NewByte(value byte) *Value {
 	return &Value{
-		_type:    NewByteType(),
-		_value:   value,
-		_members: map[string]*Value{},
+		_type:  NewByteType(),
+		_value: value,
 	}
 }
 

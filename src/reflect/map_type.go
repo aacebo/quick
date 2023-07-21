@@ -3,16 +3,14 @@ package reflect
 import "fmt"
 
 type MapType struct {
-	key     Type
-	value   Type
-	members map[string]Type
+	key   Type
+	value Type
 }
 
 func NewMapType(key Type, value Type) *MapType {
 	return &MapType{
-		key:     key,
-		value:   value,
-		members: map[string]Type{},
+		key:   key,
+		value: value,
 	}
 }
 
@@ -76,10 +74,10 @@ func (self MapType) Equals(t Type) bool {
 }
 
 func (self MapType) HasMember(name string) bool {
-	_, ok := self.members[name]
+	_, ok := members[self.Kind()][name]
 	return ok
 }
 
 func (self MapType) GetMember(name string) Type {
-	return self.members[name]
+	return memberTypes[self.Kind()][name]
 }

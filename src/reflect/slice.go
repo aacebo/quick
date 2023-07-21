@@ -5,8 +5,7 @@ func NewSlice[T Type](_type T, value []*Value) *Value {
 		_type: SliceType{
 			_type: _type,
 		},
-		_value:   value,
-		_members: map[string]*Value{},
+		_value: value,
 	}
 }
 

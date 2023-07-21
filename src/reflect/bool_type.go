@@ -1,13 +1,9 @@
 package reflect
 
-type BoolType struct {
-	members map[string]Type
-}
+type BoolType struct{}
 
 func NewBoolType() BoolType {
-	return BoolType{
-		members: map[string]Type{},
-	}
+	return BoolType{}
 }
 
 func (self BoolType) Kind() Kind {
@@ -43,10 +39,10 @@ func (self BoolType) Equals(t Type) bool {
 }
 
 func (self BoolType) HasMember(name string) bool {
-	_, ok := self.members[name]
+	_, ok := members[self.Kind()][name]
 	return ok
 }
 
 func (self BoolType) GetMember(name string) Type {
-	return self.members[name]
+	return memberTypes[self.Kind()][name]
 }

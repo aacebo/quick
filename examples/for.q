@@ -11,3 +11,5 @@ for (let i = 0; i < str.len(); i = i + 1) {
     print str.at(i);
     print "\n";
 }
+
+print str.slice(2, 5) + "\n";

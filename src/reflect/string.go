@@ -6,11 +6,6 @@ func NewString(value string) *Value {
 		_value: value,
 	}
 
-	self._members = map[string]*Value{
-		"len": self.StringMemberLen(),
-		"at":  self.StringMemberAt(),
-	}
-
 	return self
 }
 

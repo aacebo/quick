@@ -1,24 +1,9 @@
 package reflect
 
-type StringType struct {
-	members map[string]Type
-}
+type StringType struct{}
 
 func NewStringType() StringType {
-	return StringType{
-		members: map[string]Type{
-			"len": NewNativeFnType(
-				"len",
-				[]Param{},
-				NewIntType(),
-			),
-			"at": NewNativeFnType(
-				"at",
-				[]Param{{Name: "i", Type: NewIntType()}},
-				NewByteType(),
-			),
-		},
-	}
+	return StringType{}
 }
 
 func (self StringType) Kind() Kind {
@@ -54,10 +39,10 @@ func (self StringType) Equals(t Type) bool {
 }
 
 func (self StringType) HasMember(name string) bool {
-	_, ok := self.members[name]
+	_, ok := members[self.Kind()][name]
 	return ok
 }
 
 func (self StringType) GetMember(name string) Type {
-	return self.members[name]
+	return memberTypes[self.Kind()][name]
 }

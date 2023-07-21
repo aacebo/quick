@@ -639,7 +639,7 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		mod := reflect.NewModType()
 
 		for key, _type := range parser.scope.types {
-			mod.SetMember(key, _type)
+			mod.SetExport(key, _type)
 		}
 
 		self.scope.Set(path[len(path)-1].String(), mod)
