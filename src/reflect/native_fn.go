@@ -4,7 +4,7 @@ func NewNativeFn(
 	name string,
 	params []Param,
 	returnType Type,
-	value func([]*Value) *Value,
+	cb func([]*Value) *Value,
 ) *Value {
 	return &Value{
 		_type: NewNativeFnType(
@@ -12,7 +12,7 @@ func NewNativeFn(
 			params,
 			returnType,
 		),
-		_value: value,
+		_value: cb,
 	}
 }
 
