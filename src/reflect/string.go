@@ -7,12 +7,8 @@ func NewString(value string) *Value {
 	}
 
 	self._members = map[string]*Value{
-		"len": NewNativeFn("len", []Param{}, NewIntType(), func(args []*Value) *Value {
-			return NewInt(self.Len())
-		}),
-		"at": NewNativeFn("at", []Param{{Name: "i", Type: NewIntType()}}, NewByteType(), func(args []*Value) *Value {
-			return NewByte(self.String()[args[0].Int()])
-		}),
+		"len": self.StringMemberLen(),
+		"at":  self.StringMemberAt(),
 	}
 
 	return self
