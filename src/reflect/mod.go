@@ -19,16 +19,16 @@ func (self Value) Mod() map[string]*Value {
 	return self._value.(map[string]*Value)
 }
 
-func (self Value) HasExport(name string) bool {
+func (self Value) ModHasMember(name string) bool {
 	_, ok := self.Mod()[name]
 	return ok
 }
 
-func (self Value) GetExport(name string) *Value {
+func (self Value) ModGetMember(name string) *Value {
 	return self.Mod()[name]
 }
 
-func (self *Value) SetExport(name string, value *Value) {
+func (self *Value) ModSetMember(name string, value *Value) {
 	mod := self.Mod()
 	v, ok := mod[name]
 
@@ -40,7 +40,7 @@ func (self *Value) SetExport(name string, value *Value) {
 	self._value = mod
 }
 
-func (self *Value) DelExport(name string) {
+func (self *Value) ModDelMember(name string) {
 	v := self.Mod()
 	delete(v, name)
 	self._value = v

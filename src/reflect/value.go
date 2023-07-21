@@ -56,3 +56,45 @@ func (self Value) ToString() string {
 
 	return self.String()
 }
+
+func (self Value) HasMember(name string) bool {
+	if self.IsMod() {
+		return self.ModHasMember(name)
+	}
+
+	if self.IsString() {
+		return self.StringHasMember(name)
+	}
+
+	panic("method not supported for type '" + self.Type().Name() + "'")
+}
+
+func (self *Value) GetMember(name string) *Value {
+	if self.IsMod() {
+		return self.ModGetMember(name)
+	}
+
+	if self.IsString() {
+		return self.StringGetMember(name)
+	}
+
+	panic("method not supported for type '" + self.Type().Name() + "'")
+}
+
+func (self *Value) SetMember(name string, value *Value) {
+	if self.IsMod() {
+		self.ModSetMember(name, value)
+		return
+	}
+
+	panic("method not supported for type '" + self.Type().Name() + "'")
+}
+
+func (self *Value) DelMember(name string) {
+	if self.IsMod() {
+		self.ModDelMember(name)
+		return
+	}
+
+	panic("method not supported for type '" + self.Type().Name() + "'")
+}

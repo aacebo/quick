@@ -13,6 +13,7 @@ const (
 	String
 	Slice
 	Fn
+	NativeFn
 	Struct
 	Mod
 )
@@ -37,6 +38,8 @@ func (self Kind) String() string {
 		return "slice"
 	case Fn:
 		return "fn"
+	case NativeFn:
+		return "native_fn"
 	case Struct:
 		return "struct"
 	case Mod:

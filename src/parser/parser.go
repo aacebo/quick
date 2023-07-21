@@ -632,7 +632,7 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 		mod := reflect.NewModType()
 
 		for key, _type := range parser.scope.types {
-			mod.SetExport(key, _type)
+			mod.SetMember(key, _type)
 		}
 
 		self.scope.Set(path[len(path)-1].String(), mod)
@@ -871,19 +871,17 @@ func (self *Parser) call() (expr.Expr, *error.Error) {
 					return nil, err
 				}
 
-				mod := t.(reflect.ModType)
-
-				if !mod.HasExport(v.Name.String()) {
+				if !t.HasMember(v.Name.String()) {
 					return nil, self.error(v.Name.String() + " is undefined")
 				}
 
-				_type = mod.GetExport(v.Name.String())
+				_type = t.GetMember(v.Name.String())
 			}
 
-			fn, ok := _type.(reflect.FnType)
+			fn, ok := _type.(reflect.CallableType)
 
 			if !ok {
-				return nil, self.error("expected type 'function', received '" + _type.Name() + "'")
+				return nil, self.error("expected type 'fn', received '" + _type.Name() + "'")
 			}
 
 			if self.curr.Kind != token.RIGHT_PAREN {

@@ -6,4 +6,6 @@ fn test(a int, b int) -> int {
 }
 
 print test(1, 56);
-print "\n\n";
+print "\n";
+print echo.len();
+print "\n";

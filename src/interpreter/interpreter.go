@@ -227,7 +227,7 @@ func (self *Interpreter) VisitUseStmt(s *stmt.Use) (*reflect.Value, *error.Error
 		}
 	} else {
 		for key, value := range sibling.scope.values {
-			mod.SetExport(key, value)
+			mod.SetMember(key, value)
 		}
 
 		self.scope.Set(s.Path[len(s.Path)-1].String(), mod)
@@ -313,7 +313,7 @@ func (self *Interpreter) VisitCallExpr(e *expr.Call) (*reflect.Value, *error.Err
 		args = append(args, v)
 	}
 
-	if !callee.IsFn() {
+	if !callee.IsFn() && !callee.IsNativeFn() {
 		return nil, error.New(
 			e.Paren.Path,
 			e.Paren.Ln,
@@ -321,6 +321,10 @@ func (self *Interpreter) VisitCallExpr(e *expr.Call) (*reflect.Value, *error.Err
 			e.Paren.End,
 			"expected function",
 		)
+	}
+
+	if callee.IsNativeFn() {
+		return callee.NativeFn()(args), nil
 	}
 
 	if len(args) != len(callee.FnType().Params()) {
@@ -353,27 +357,17 @@ func (self *Interpreter) VisitGetExpr(e *expr.Get) (*reflect.Value, *error.Error
 		return nil, err
 	}
 
-	if v.IsMod() {
-		if !v.HasExport(e.Name.String()) {
-			return nil, error.New(
-				e.Name.Path,
-				e.Name.Ln,
-				e.Name.Start,
-				e.Name.End,
-				"module export '"+e.Name.String()+"' not found",
-			)
-		}
-
-		return v.GetExport(e.Name.String()), nil
+	if !v.HasMember(e.Name.String()) {
+		return nil, error.New(
+			e.Name.Path,
+			e.Name.Ln,
+			e.Name.Start,
+			e.Name.End,
+			"module export '"+e.Name.String()+"' not found",
+		)
 	}
 
-	return nil, error.New(
-		e.Name.Path,
-		e.Name.Ln,
-		e.Name.Start,
-		e.Name.End,
-		"expected object",
-	)
+	return v.GetMember(e.Name.String()), nil
 }
 
 func (self *Interpreter) VisitGroupingExpr(e *expr.Grouping) (*reflect.Value, *error.Error) {

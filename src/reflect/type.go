@@ -9,9 +9,17 @@ type Type interface {
 	Numeric() bool
 	Collection() bool
 	Equals(Type) bool
+	HasMember(string) bool
+	GetMember(string) Type
 }
 
 type ComparableType interface {
 	Type
 	comparable
+}
+
+type CallableType interface {
+	Params() []Param
+
+	Type
 }

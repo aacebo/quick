@@ -1,9 +1,13 @@
 package reflect
 
-type IntType struct{}
+type IntType struct {
+	members map[string]Type
+}
 
 func NewIntType() IntType {
-	return IntType{}
+	return IntType{
+		members: map[string]Type{},
+	}
 }
 
 func (self IntType) Kind() Kind {
@@ -36,4 +40,13 @@ func (self IntType) Collection() bool {
 
 func (self IntType) Equals(t Type) bool {
 	return t.Kind() == Int
+}
+
+func (self IntType) HasMember(name string) bool {
+	_, ok := self.members[name]
+	return ok
+}
+
+func (self IntType) GetMember(name string) Type {
+	return self.members[name]
 }

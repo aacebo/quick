@@ -1,9 +1,13 @@
 package reflect
 
-type FloatType struct{}
+type FloatType struct {
+	members map[string]Type
+}
 
 func NewFloatType() FloatType {
-	return FloatType{}
+	return FloatType{
+		members: map[string]Type{},
+	}
 }
 
 func (self FloatType) Kind() Kind {
@@ -36,4 +40,13 @@ func (self FloatType) Collection() bool {
 
 func (self FloatType) Equals(t Type) bool {
 	return t.Kind() == Float
+}
+
+func (self FloatType) HasMember(name string) bool {
+	_, ok := self.members[name]
+	return ok
+}
+
+func (self FloatType) GetMember(name string) Type {
+	return self.members[name]
 }

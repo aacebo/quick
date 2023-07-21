@@ -3,14 +3,16 @@ package reflect
 import "fmt"
 
 type SliceType struct {
-	_type  Type
-	length int
+	_type   Type
+	length  int
+	members map[string]Type
 }
 
 func NewSliceType(_type Type, length int) SliceType {
 	return SliceType{
-		_type:  _type,
-		length: length,
+		_type:   _type,
+		length:  length,
+		members: map[string]Type{},
 	}
 }
 
@@ -59,4 +61,13 @@ func (self SliceType) Equals(t Type) bool {
 	}
 
 	return true
+}
+
+func (self SliceType) HasMember(name string) bool {
+	_, ok := self.members[name]
+	return ok
+}
+
+func (self SliceType) GetMember(name string) Type {
+	return self.members[name]
 }

@@ -1,9 +1,13 @@
 package reflect
 
-type ByteType struct{}
+type ByteType struct {
+	members map[string]Type
+}
 
 func NewByteType() ByteType {
-	return ByteType{}
+	return ByteType{
+		members: map[string]Type{},
+	}
 }
 
 func (self ByteType) Kind() Kind {
@@ -36,4 +40,13 @@ func (self ByteType) Collection() bool {
 
 func (self ByteType) Equals(t Type) bool {
 	return t.Kind() == Byte
+}
+
+func (self ByteType) HasMember(name string) bool {
+	_, ok := self.members[name]
+	return ok
+}
+
+func (self ByteType) GetMember(name string) Type {
+	return self.members[name]
 }
