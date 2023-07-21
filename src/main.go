@@ -39,7 +39,7 @@ func main() {
 			log.Fatalln(err)
 		}
 
-		if value != nil {
+		if value != nil && !value.IsNil() {
 			log.Println(value.ToString())
 		}
 	}
