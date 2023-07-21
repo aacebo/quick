@@ -675,14 +675,8 @@ func (self *Parser) assignment() (expr.Expr, *error.Error) {
 			return nil, err
 		}
 
-		if call, ok := value.(*expr.Call); ok {
-			if get, ok := call.Callee.(*expr.Get); ok {
-				assignType = assignType.GetMember(get.Name.String())
-
-				if callable, ok := assignType.(reflect.CallableType); ok {
-					assignType = callable.ReturnType()
-				}
-			}
+		if callable, ok := assignType.(reflect.CallableType); ok {
+			assignType = callable.ReturnType()
 		}
 
 		if !varType.Equals(assignType) {
@@ -879,11 +873,7 @@ func (self *Parser) call() (expr.Expr, *error.Error) {
 					return nil, err
 				}
 
-				if !t.HasMember(v.Name.String()) {
-					return nil, self.error(v.Name.String() + " is undefined")
-				}
-
-				_type = t.GetMember(v.Name.String())
+				_type = t
 			}
 
 			fn, ok := _type.(reflect.CallableType)

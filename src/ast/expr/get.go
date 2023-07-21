@@ -19,7 +19,13 @@ func NewGet(object Expr, name *token.Token) *Get {
 }
 
 func (self *Get) GetType() (reflect.Type, *error.Error) {
-	return self.Object.GetType()
+	t, err := self.Object.GetType()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return t.GetMember(self.Name.String()), nil
 }
 
 func (self *Get) Accept(v Visitor) (*reflect.Value, *error.Error) {

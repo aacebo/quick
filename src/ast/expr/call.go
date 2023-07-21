@@ -21,7 +21,17 @@ func NewCall(callee Expr, paren *token.Token, args []Expr) *Call {
 }
 
 func (self *Call) GetType() (reflect.Type, *error.Error) {
-	return self.Callee.GetType()
+	t, err := self.Callee.GetType()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if callable, ok := t.(reflect.CallableType); ok {
+		t = callable.ReturnType()
+	}
+
+	return t, nil
 }
 
 func (self *Call) Accept(v Visitor) (*reflect.Value, *error.Error) {
