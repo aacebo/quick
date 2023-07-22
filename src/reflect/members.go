@@ -37,10 +37,10 @@ var members = map[Kind]map[string]MemberCallback{
 	},
 	String: {
 		"to_int":  toInt(),
-		"at":      stringMemberAt(),
-		"len":     stringMemberLen(),
-		"replace": stringMemberReplace(),
-		"slice":   stringMemberSlice(),
+		"at":      stringAt(),
+		"len":     stringLen(),
+		"replace": stringReplace(),
+		"slice":   stringSlice(),
 	},
 }
 

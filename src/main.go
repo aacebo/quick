@@ -7,9 +7,11 @@ import (
 	"quick/src/ast/stmt"
 	"quick/src/interpreter"
 	"quick/src/parser"
+	"time"
 )
 
 func main() {
+	start := time.Now()
 	stmts := [][]stmt.Stmt{}
 
 	if len(os.Args) < 2 {
@@ -43,4 +45,6 @@ func main() {
 			log.Println(value.ToString())
 		}
 	}
+
+	log.Printf("%dms\n", time.Since(start).Milliseconds())
 }

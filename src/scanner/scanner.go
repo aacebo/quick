@@ -98,6 +98,9 @@ func (self *Scanner) Next() (*token.Token, *error.Error) {
 		} else if self.peek() == '>' {
 			self.right++
 			return self.create(token.RETURN_TYPE), nil
+		} else if self.isInt(self.peek()) {
+			self.right++
+			return self.onNumeric()
 		}
 
 		return self.create(token.MINUS), nil

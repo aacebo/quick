@@ -2,7 +2,7 @@ package reflect
 
 import "strings"
 
-func stringMemberAt() MemberCallback {
+func stringAt() MemberCallback {
 	return func(self *Value) *Value {
 		return NewNativeFn("at", []Param{{Name: "i", Type: NewIntType()}}, NewByteType(), func(args []*Value) *Value {
 			return NewByte(self.String()[args[0].Int()])
@@ -10,7 +10,7 @@ func stringMemberAt() MemberCallback {
 	}
 }
 
-func stringMemberLen() MemberCallback {
+func stringLen() MemberCallback {
 	return func(self *Value) *Value {
 		return NewNativeFn("len", []Param{}, NewIntType(), func(args []*Value) *Value {
 			return NewInt(self.Len())
@@ -18,7 +18,7 @@ func stringMemberLen() MemberCallback {
 	}
 }
 
-func stringMemberReplace() MemberCallback {
+func stringReplace() MemberCallback {
 	return func(self *Value) *Value {
 		return NewNativeFn("replace", []Param{
 			{Name: "from", Type: NewStringType()},
@@ -34,7 +34,7 @@ func stringMemberReplace() MemberCallback {
 	}
 }
 
-func stringMemberSlice() MemberCallback {
+func stringSlice() MemberCallback {
 	return func(self *Value) *Value {
 		return NewNativeFn("slice", []Param{
 			{Name: "start", Type: NewIntType()},

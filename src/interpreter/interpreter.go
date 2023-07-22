@@ -27,8 +27,6 @@ func NewChild(parent *Scope) *Interpreter {
 }
 
 func (self *Interpreter) Interpret(stmts []stmt.Stmt) (*reflect.Value, *error.Error) {
-	var value *reflect.Value = nil
-
 	for _, stmt := range stmts {
 		v, err := self.Exec(stmt)
 
@@ -37,15 +35,14 @@ func (self *Interpreter) Interpret(stmts []stmt.Stmt) (*reflect.Value, *error.Er
 		}
 
 		if v != nil {
-			value = v
+			return v, nil
 		}
 	}
 
-	return value, nil
+	return nil, nil
 }
 
 func (self *Interpreter) InterpretChild(stmts []stmt.Stmt) (*reflect.Value, *error.Error) {
-	var value *reflect.Value = nil
 	parent := self.scope
 	self.scope = NewChildScope(parent)
 
@@ -61,11 +58,11 @@ func (self *Interpreter) InterpretChild(stmts []stmt.Stmt) (*reflect.Value, *err
 		}
 
 		if v != nil {
-			value = v
+			return v, nil
 		}
 	}
 
-	return value, nil
+	return nil, nil
 }
 
 func (self *Interpreter) Eval(e expr.Expr) (*reflect.Value, *error.Error) {
@@ -85,7 +82,8 @@ func (self *Interpreter) VisitBlockStmt(s *stmt.Block) (*reflect.Value, *error.E
 }
 
 func (self *Interpreter) VisitExprStmt(s *stmt.Expr) (*reflect.Value, *error.Error) {
-	return self.Eval(s.Expr)
+	_, err := self.Eval(s.Expr)
+	return nil, err
 }
 
 func (self *Interpreter) VisitForStmt(s *stmt.For) (*reflect.Value, *error.Error) {
@@ -111,20 +109,26 @@ func (self *Interpreter) VisitForStmt(s *stmt.For) (*reflect.Value, *error.Error
 			return nil, err
 		}
 
-		if cond == nil || !cond.Truthy() {
+		if !cond.Truthy() {
 			break
 		}
 
-		_, err = self.Exec(s.Body)
+		v, err := self.Exec(s.Body)
 
 		if err != nil {
 			return nil, err
 		}
 
-		_, err = self.Eval(s.Inc)
+		if v != nil {
+			return v, nil
+		}
 
-		if err != nil {
-			return nil, err
+		if s.Inc != nil {
+			_, err = self.Eval(s.Inc)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -144,7 +148,7 @@ func (self *Interpreter) VisitFnStmt(s *stmt.Fn) (*reflect.Value, *error.Error) 
 		s,
 	)
 
-	self.scope.Set(s.Name.String(), fn)
+	self.scope.Define(s.Name.String(), fn)
 	return nil, nil
 }
 
@@ -156,16 +160,16 @@ func (self *Interpreter) VisitIfStmt(s *stmt.If) (*reflect.Value, *error.Error) 
 	}
 
 	if v.Truthy() {
-		self.Exec(s.Then)
+		return self.Exec(s.Then)
 	} else if s.Else != nil {
-		self.Exec(s.Else)
+		return self.Exec(s.Else)
 	}
 
 	return nil, nil
 }
 
 func (self *Interpreter) VisitReturnStmt(s *stmt.Return) (*reflect.Value, *error.Error) {
-	var value *reflect.Value = nil
+	value := reflect.NewNil()
 
 	if s.Value != nil {
 		v, err := self.Eval(s.Value)
@@ -174,7 +178,9 @@ func (self *Interpreter) VisitReturnStmt(s *stmt.Return) (*reflect.Value, *error
 			return nil, err
 		}
 
-		value = v
+		if v != nil {
+			value = v
+		}
 	}
 
 	return value, nil
@@ -197,7 +203,7 @@ func (self *Interpreter) VisitVarStmt(s *stmt.Var) (*reflect.Value, *error.Error
 		value = v
 	}
 
-	self.scope.Set(s.Name.String(), value)
+	self.scope.Define(s.Name.String(), value)
 	return nil, nil
 }
 
@@ -212,14 +218,14 @@ func (self *Interpreter) VisitUseStmt(s *stmt.Use) (*reflect.Value, *error.Error
 
 	if s.Path[len(s.Path)-1].Kind == token.STAR {
 		for key, value := range sibling.scope.values {
-			self.scope.Set(key, value)
+			self.scope.Define(key, value)
 		}
 	} else {
 		for key, value := range sibling.scope.values {
 			mod.SetExport(key, value)
 		}
 
-		self.scope.Set(s.Path[len(s.Path)-1].String(), mod)
+		self.scope.Define(s.Path[len(s.Path)-1].String(), mod)
 	}
 
 	return nil, nil
@@ -333,7 +339,7 @@ func (self *Interpreter) VisitCallExpr(e *expr.Call) (*reflect.Value, *error.Err
 	interp := NewChild(self.scope)
 
 	for i, arg := range args {
-		interp.scope.Set(callee.FnType().Params()[i].Name, arg)
+		interp.scope.Define(callee.FnType().Params()[i].Name, arg)
 	}
 
 	return interp.InterpretChild(callee.Fn().(*stmt.Fn).Body)

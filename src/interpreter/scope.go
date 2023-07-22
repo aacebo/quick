@@ -68,5 +68,16 @@ func (self Scope) Get(key string) *reflect.Value {
 }
 
 func (self *Scope) Set(key string, value *reflect.Value) {
+	if self.HasLocal(key) {
+		self.values[key] = value
+		return
+	}
+
+	if self.parent != nil {
+		self.parent.Set(key, value)
+	}
+}
+
+func (self *Scope) Define(key string, value *reflect.Value) {
 	self.values[key] = value
 }

@@ -68,5 +68,16 @@ func (self Scope) Get(key string) reflect.Type {
 }
 
 func (self *Scope) Set(key string, _type reflect.Type) {
+	if self.HasLocal(key) {
+		self.types[key] = _type
+		return
+	}
+
+	if self.parent != nil {
+		self.parent.Set(key, _type)
+	}
+}
+
+func (self *Scope) Define(key string, _type reflect.Type) {
 	self.types[key] = _type
 }

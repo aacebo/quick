@@ -227,7 +227,7 @@ func (self *Parser) _var() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	self.scope.Set(name.String(), _type)
+	self.scope.Define(name.String(), _type)
 	return stmt.NewVar(keyword, name, _type, nilable, init), nil
 }
 
@@ -267,7 +267,7 @@ func (self *Parser) _struct() (stmt.Stmt, *error.Error) {
 	}
 
 	v := stmt.NewStruct(name, methods)
-	self.scope.Set(name.String(), nil)
+	self.scope.Define(name.String(), nil)
 	return v, nil
 }
 
@@ -289,37 +289,27 @@ func (self *Parser) _for() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	if self.match(token.SEMI_COLON) {
-		init = nil
-	} else if self.match(token.LET) || self.match(token.CONST) {
+	if self.match(token.LET) || self.match(token.CONST) {
 		init, err = self._var()
-
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		init, err = self.expr()
-
-		if err != nil {
-			return nil, err
-		}
 	}
-
-	if self.curr.Kind != token.SEMI_COLON {
-		cond, err = self.expression()
-
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	_, err = self.consume(token.SEMI_COLON, "expected ';'")
 
 	if err != nil {
 		return nil, err
 	}
 
-	if self.curr.Kind != token.RIGHT_PAREN {
+	cond, err = self.expression()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if init != nil {
+		_, err = self.consume(token.SEMI_COLON, "expected ';'")
+
+		if err != nil {
+			return nil, err
+		}
+
 		inc, err = self.expression()
 
 		if err != nil {
@@ -423,7 +413,7 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 				nil,
 			))
 
-			self.scope.Set(
+			self.scope.Define(
 				param.String(),
 				self.scope.Get(_type.String()),
 			)
@@ -495,7 +485,7 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 	)
 
 	self.scope = parent
-	self.scope.Set(
+	self.scope.Define(
 		name.String(),
 		reflect.NewFnType(
 			name.String(),
@@ -615,7 +605,7 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 
 	if path[len(path)-1].Kind == token.STAR {
 		for key, _type := range parser.scope.types {
-			self.scope.Set(key, _type)
+			self.scope.Define(key, _type)
 		}
 	} else {
 		mod := reflect.NewModType()
@@ -624,7 +614,7 @@ func (self *Parser) use() (stmt.Stmt, *error.Error) {
 			mod.SetExport(key, _type)
 		}
 
-		self.scope.Set(path[len(path)-1].String(), mod)
+		self.scope.Define(path[len(path)-1].String(), mod)
 	}
 
 	return v, nil
