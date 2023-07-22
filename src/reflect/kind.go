@@ -1,6 +1,6 @@
 package reflect
 
-type Kind int
+type Kind uint8
 
 const (
 	Invalid Kind = iota

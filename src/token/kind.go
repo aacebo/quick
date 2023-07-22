@@ -1,6 +1,6 @@
 package token
 
-type Kind int
+type Kind uint8
 
 const (
 	EOF Kind = iota
