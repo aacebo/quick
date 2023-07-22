@@ -1,14 +1,9 @@
-fn fib(num int) -> float {
-    let a = 1.0;
-    let b = 0.0;
-
-    for (let i = num; i > 0; i = i - 1) {
-        const tmp = a;
-        a = a + b;
-        b = tmp;
+fn fib(num float) -> float {
+    if (num <= 2.0) {
+        return 1.0;
     }
 
-    return b;
+    return fib(num - 1.0) + fib(num - 2.0);
 }
 
-print(fib(100).to_string() + "\n");
+print(fib(40.0).to_string() + "\n");

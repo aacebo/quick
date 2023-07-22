@@ -444,6 +444,18 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return_type = self.scope.Get(t.String())
 	}
 
+	fn := reflect.NewFnType(
+		name.String(),
+		utils.MapSlice(vars, func(v *stmt.Var) reflect.Param {
+			return reflect.Param{
+				Name: v.Name.String(),
+				Type: v.Type,
+			}
+		}),
+		return_type,
+	)
+
+	self.scope.Define(name.String(), fn)
 	_, err = self.consume(token.LEFT_BRACE, "expected '{'")
 
 	if err != nil {
@@ -456,25 +468,22 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 		return nil, err
 	}
 
-	ret := body[len(body)-1]
+	for _, line := range body {
+		if ret, ok := line.(*stmt.Return); ok {
+			t, err := ret.Value.GetType()
 
-	switch ret.(type) {
-	case *stmt.Return:
-		t, err := ret.(*stmt.Return).Value.GetType()
+			if err != nil {
+				return nil, err
+			}
 
-		if err != nil {
-			return nil, err
+			if !return_type.Equals(t) {
+				return nil, self.error(fmt.Sprintf(
+					"expected return type '%s', received '%s'",
+					return_type.Name(),
+					t.Name(),
+				))
+			}
 		}
-
-		if !return_type.Equals(t) {
-			return nil, self.error(fmt.Sprintf(
-				"expected return type '%s', received '%s'",
-				return_type.Name(),
-				t.Name(),
-			))
-		}
-	default:
-		return nil, self.error("missing return statement")
 	}
 
 	v := stmt.NewFn(
@@ -485,19 +494,7 @@ func (self *Parser) fn() (stmt.Stmt, *error.Error) {
 	)
 
 	self.scope = parent
-	self.scope.Define(
-		name.String(),
-		reflect.NewFnType(
-			name.String(),
-			utils.MapSlice(vars, func(v *stmt.Var) reflect.Param {
-				return reflect.Param{
-					Name: v.Name.String(),
-					Type: v.Type,
-				}
-			}),
-			return_type,
-		),
-	)
+	self.scope.Define(name.String(), fn)
 
 	return v, nil
 }
