@@ -28,6 +28,6 @@ func (self Value) Fn() any {
 	return self._value
 }
 
-func (self Value) FnString() string {
+func (self Value) FnToString() string {
 	return self.FnType().String()
 }

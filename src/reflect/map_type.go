@@ -73,6 +73,10 @@ func (self MapType) Equals(t Type) bool {
 	return true
 }
 
+func (self MapType) ConvertableTo(t Type) bool {
+	return false
+}
+
 func (self MapType) HasMember(name string) bool {
 	_, ok := members[self.Kind()][name]
 	return ok

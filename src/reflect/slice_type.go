@@ -61,6 +61,10 @@ func (self SliceType) Equals(t Type) bool {
 	return true
 }
 
+func (self SliceType) ConvertableTo(t Type) bool {
+	return false
+}
+
 func (self SliceType) HasMember(name string) bool {
 	_, ok := members[self.Kind()][name]
 	return ok

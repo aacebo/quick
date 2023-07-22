@@ -56,6 +56,10 @@ func (self ModType) Equals(t Type) bool {
 	return true
 }
 
+func (self ModType) ConvertableTo(t Type) bool {
+	return false
+}
+
 func (self ModType) HasMember(name string) bool {
 	_, ok := members[self.Kind()][name]
 

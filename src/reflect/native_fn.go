@@ -28,6 +28,6 @@ func (self Value) NativeFn() func([]*Value) *Value {
 	return self._value.(func([]*Value) *Value)
 }
 
-func (self Value) NativeFnString() string {
+func (self Value) NativeFnToString() string {
 	return self.NativeFnType().String()
 }

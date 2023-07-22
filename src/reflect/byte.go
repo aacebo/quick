@@ -23,6 +23,10 @@ func (self *Value) SetByte(value byte) {
 	self._value = value
 }
 
-func (self Value) ByteString() string {
+func (self Value) ByteToString() string {
 	return string(self.Byte())
+}
+
+func (self Value) ByteToInt() int {
+	return int(self.Byte())
 }

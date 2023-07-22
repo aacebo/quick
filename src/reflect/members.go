@@ -4,36 +4,39 @@ type MemberCallback func(*Value) *Value
 
 var members = map[Kind]map[string]MemberCallback{
 	Bool: {
-		"to_string": memberToString(),
+		"to_string": toString(),
 	},
 	Byte: {
-		"to_string": memberToString(),
+		"to_string": toString(),
+		"to_int":    toInt(),
 	},
 	Float: {
-		"to_string": memberToString(),
+		"to_string": toString(),
+		"to_int":    toInt(),
 	},
 	Fn: {
-		"to_string": memberToString(),
+		"to_string": toString(),
 	},
 	Int: {
-		"to_string": memberToString(),
+		"to_string": toString(),
 	},
 	Map: {
-		"to_string": memberToString(),
+		"to_string": toString(),
 	},
 	Mod: {
-		"to_string": memberToString(),
+		"to_string": toString(),
 	},
 	NativeFn: {
-		"to_string": memberToString(),
+		"to_string": toString(),
 	},
 	Nil: {
-		"to_string": memberToString(),
+		"to_string": toString(),
 	},
 	Slice: {
-		"to_string": memberToString(),
+		"to_string": toString(),
 	},
 	String: {
+		"to_int":  toInt(),
 		"at":      stringMemberAt(),
 		"len":     stringMemberLen(),
 		"replace": stringMemberReplace(),
@@ -47,9 +50,11 @@ var memberTypes = map[Kind]map[string]Type{
 	},
 	Byte: {
 		"to_string": NewNativeFnType("to_string", []Param{}, NewStringType()),
+		"to_int":    NewNativeFnType("to_int", []Param{}, NewIntType()),
 	},
 	Float: {
 		"to_string": NewNativeFnType("to_string", []Param{}, NewStringType()),
+		"to_int":    NewNativeFnType("to_int", []Param{}, NewIntType()),
 	},
 	Fn: {
 		"to_string": NewNativeFnType("to_string", []Param{}, NewStringType()),
@@ -73,8 +78,9 @@ var memberTypes = map[Kind]map[string]Type{
 		"to_string": NewNativeFnType("to_string", []Param{}, NewStringType()),
 	},
 	String: {
-		"at":  NewNativeFnType("at", []Param{{Name: "i", Type: NewIntType()}}, NewByteType()),
-		"len": NewNativeFnType("len", []Param{}, NewIntType()),
+		"to_int": NewNativeFnType("to_int", []Param{}, NewIntType()),
+		"at":     NewNativeFnType("at", []Param{{Name: "i", Type: NewIntType()}}, NewByteType()),
+		"len":    NewNativeFnType("len", []Param{}, NewIntType()),
 		"replace": NewNativeFnType(
 			"replace",
 			[]Param{
@@ -94,10 +100,18 @@ var memberTypes = map[Kind]map[string]Type{
 	},
 }
 
-func memberToString() MemberCallback {
+func toString() MemberCallback {
 	return func(self *Value) *Value {
 		return NewNativeFn("to_string", []Param{}, NewStringType(), func(args []*Value) *Value {
 			return NewString(self.ToString())
+		})
+	}
+}
+
+func toInt() MemberCallback {
+	return func(self *Value) *Value {
+		return NewNativeFn("to_int", []Param{}, NewIntType(), func(args []*Value) *Value {
+			return NewInt(self.ToInt())
 		})
 	}
 }

@@ -25,6 +25,6 @@ func (self *Value) SetInt(value int) {
 	self._value = value
 }
 
-func (self Value) IntString() string {
+func (self Value) IntToString() string {
 	return strconv.Itoa(self.Int())
 }

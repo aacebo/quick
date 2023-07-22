@@ -81,6 +81,10 @@ func (self FnType) Equals(t Type) bool {
 	return true
 }
 
+func (self FnType) ConvertableTo(t Type) bool {
+	return false
+}
+
 func (self FnType) HasMember(name string) bool {
 	_, ok := members[self.Kind()][name]
 	return ok

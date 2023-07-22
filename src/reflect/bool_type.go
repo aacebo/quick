@@ -38,6 +38,11 @@ func (self BoolType) Equals(t Type) bool {
 	return t.Kind() == Bool
 }
 
+func (self BoolType) ConvertableTo(t Type) bool {
+	kind := t.Kind()
+	return kind == Bool || kind == String
+}
+
 func (self BoolType) HasMember(name string) bool {
 	_, ok := members[self.Kind()][name]
 	return ok

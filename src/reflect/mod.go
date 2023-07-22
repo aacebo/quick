@@ -19,7 +19,7 @@ func (self Value) Mod() map[string]*Value {
 	return self._value.(map[string]*Value)
 }
 
-func (self Value) ModString() string {
+func (self Value) ModToString() string {
 	return self.ModType().String()
 }
 

@@ -38,6 +38,10 @@ func (self NilType) Equals(t Type) bool {
 	return t.Kind() == Nil
 }
 
+func (self NilType) ConvertableTo(t Type) bool {
+	return false
+}
+
 func (self NilType) HasMember(name string) bool {
 	_, ok := members[self.Kind()][name]
 	return ok

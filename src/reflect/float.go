@@ -25,6 +25,10 @@ func (self *Value) SetFloat(value float64) {
 	self._value = value
 }
 
-func (self Value) FloatString() string {
+func (self Value) FloatToString() string {
 	return fmt.Sprintf("%f", self.Float())
+}
+
+func (self Value) FloatToInt() int {
+	return int(self.Float())
 }

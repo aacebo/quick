@@ -42,7 +42,7 @@ func (self *Value) DelKey(key any) {
 	self._value = v
 }
 
-func (self Value) MapString() string {
+func (self Value) MapToString() string {
 	str := "{"
 	i := 0
 

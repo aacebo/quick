@@ -19,6 +19,6 @@ func (self *Value) SetNil() {
 	self._value = nil
 }
 
-func (self Value) NilString() string {
+func (self Value) NilToString() string {
 	return "<nil>"
 }

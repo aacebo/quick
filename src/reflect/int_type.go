@@ -38,6 +38,11 @@ func (self IntType) Equals(t Type) bool {
 	return t.Kind() == Int
 }
 
+func (self IntType) ConvertableTo(t Type) bool {
+	kind := t.Kind()
+	return kind == Int || kind == Float || kind == String
+}
+
 func (self IntType) HasMember(name string) bool {
 	_, ok := members[self.Kind()][name]
 	return ok

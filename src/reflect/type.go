@@ -9,6 +9,7 @@ type Type interface {
 	Numeric() bool
 	Collection() bool
 	Equals(Type) bool
+	ConvertableTo(Type) bool
 	HasMember(string) bool
 	GetMember(string) Type
 }

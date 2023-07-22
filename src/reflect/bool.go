@@ -23,7 +23,7 @@ func (self *Value) SetBool(value bool) {
 	self._value = value
 }
 
-func (self Value) BoolString() string {
+func (self Value) BoolToString() string {
 	if self.Bool() {
 		return "true"
 	}

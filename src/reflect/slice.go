@@ -47,7 +47,7 @@ func (self *Value) Pop() *Value {
 	return removed
 }
 
-func (self Value) SliceString() string {
+func (self Value) SliceToString() string {
 	str := "["
 
 	for i, value := range self.Slice() {

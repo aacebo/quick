@@ -38,6 +38,11 @@ func (self ByteType) Equals(t Type) bool {
 	return t.Kind() == Byte
 }
 
+func (self ByteType) ConvertableTo(t Type) bool {
+	kind := t.Kind()
+	return kind == Byte || kind == String || kind == Int
+}
+
 func (self ByteType) HasMember(name string) bool {
 	_, ok := members[self.Kind()][name]
 	return ok
