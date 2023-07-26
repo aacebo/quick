@@ -6,4 +6,4 @@ fn fib(num float) -> float {
     return fib(num - 1.0) + fib(num - 2.0);
 }
 
-print(fib(40.0).to_string() + "\n");
+print(fib(30.0).to_string() + "\n");
